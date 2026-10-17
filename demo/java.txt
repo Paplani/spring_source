@@ -1,0 +1,59 @@
+java => 클래스 단위, 객체지향 언어
+        문법은 자바스크립트와 유사
+
+spring framework => 설정 작업 복잡 => spring boot의 등장
+spring boot(자바로 백엔드 서버를 구성할 때 가장 많이 사용) => fastapi 같은 역할
+
+java에는 Tomcat이라는 서버역할을 하는게 설치되어 있음
+Tomcat : WAS => 자바로 작성된 웹 응답 (html, css, js)가능
+html, css, js => 응답할 수 있는 웹 서버가 있음 (nginx, apache) => java로는 응답이 안됨 => Tomcat이 응답해줌
+
+fastapi : spring boot
+router : controller => 클라이언트 요청이 들어오는 곳
+service : service => controller가 클라이언트 요청을 처리하기 위해 호출
+repository : repository => database와 연동되는 부분
+
+http://localhost:8080/ 경로를 넣어주는게 @GetMapping("/)
+
+
+react 는 npm 으로 관리함
+spring boot => gradle(요즘 추세), maven(예전부터 사용) 으로 관리함
+
+
+/demo 경로의 터미널에서 ./gradlew bootrun 실행
+gradlew: 빌드 자동화 엔진 => 코드 컴파일, 테스트 실행, 라이브러리 관리, 패키징(jar, war) 하는 도구
+
+ORM 사용 가능
+
+
+자바의 데이터 타입에 "배열, 리스트"가 있음
+배열 int[] arr={1,2,3,4}     / 요소를 추가할때 어려움
+List : 데이터베이스에 있는 내용을 화면단으로 넘겨줄때 List에 담아서 넘김 == 파이썬의 리스트와 같은 개념
+파이썬이랑 다른점 : 파이썬은 여러가지의 타입을 같이 담을 수 있지만
+                자바는 타입을 정해놓은 후 담아야 함.    ex: List<StudentDto>
+
+자바는 객체를 생성하는 것이 중요하다
+Student s = new Student();
+객체로 만들어야 Student 가 가지고 있는 기능 사용
+
+StudentService service = newStudentService();
+service.getList(); 가능하게 됨
+==> 이걸 스프링 컨테이너가 private final StudentService StudentService; 로 한번에 처리하게 됨
+==> @controller, @service 의 역할임.
+
+public class A{
+
+        public A(){}
+}
+
+public class B{
+        A obj;
+
+        public B(){
+                obj= new A()
+        }
+
+        public void setObj(){
+                obj = new A()
+        }
+}
