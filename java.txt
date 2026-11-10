@@ -1,0 +1,186 @@
+java => 클래스 단위, 객체지향 언어
+        문법은 자바스크립트와 유사
+
+spring framework => 설정 작업 복잡 => spring boot의 등장
+spring boot(자바로 백엔드 서버를 구성할 때 가장 많이 사용) => fastapi 같은 역할
+
+java에는 Tomcat이라는 서버역할을 하는게 설치되어 있음
+Tomcat : WAS => 자바로 작성된 웹 응답 (html, css, js)가능
+html, css, js => 응답할 수 있는 웹 서버가 있음 (nginx, apache) => java로는 응답이 안됨 => Tomcat이 응답해줌
+
+fastapi : spring boot
+router : controller => 클라이언트 요청이 들어오는 곳
+service : service => controller가 클라이언트 요청을 처리하기 위해 호출
+repository : repository => database와 연동되는 부분
+
+http://localhost:8080/ 경로를 넣어주는게 @GetMapping("/)
+
+
+react 는 npm 으로 관리함
+spring boot => gradle(요즘 추세), maven(예전부터 사용) 으로 관리함
+
+
+/demo 경로의 터미널에서 ./gradlew bootrun 실행
+gradlew: 빌드 자동화 엔진 => 코드 컴파일, 테스트 실행, 라이브러리 관리, 패키징(jar, war) 하는 도구
+
+-----------------------------
+Gradle 에 대해서
+== npm 같은 역할
+
+
+npm / vite
+
+gradle (maven) : 자바 빌드 도구  => 컴파일, 테스트 실행, 라이브러리 다운로드, 패키징(jar, war)
+
+./gradlew bootrun : 앱 실행
+./gradlew compileJava
+./gradlew classes
+./gradlew test
+./gradlew bootJar
+./gradlew build
+
+
+.java의 내용을 다 class 로 바꿔줘야 하고 이 과정을 compile 이라고 함
+-----------------------------
+
+ORM 사용 가능
+
+
+자바의 데이터 타입에 "배열, 리스트"가 있음
+배열 int[] arr={1,2,3,4}     / 요소를 추가할때 어려움
+List : 데이터베이스에 있는 내용을 화면단으로 넘겨줄때 List에 담아서 넘김 == 파이썬의 리스트와 같은 개념
+파이썬이랑 다른점 : 파이썬은 여러가지의 타입을 같이 담을 수 있지만
+                자바는 타입을 정해놓은 후 담아야 함.    ex: List<StudentDto>
+
+자바는 객체를 생성하는 것이 중요하다
+Student s = new Student();
+객체로 만들어야 Student 가 가지고 있는 기능 사용
+
+StudentService service = newStudentService();
+service.getList(); 가능하게 됨
+==> 이걸 스프링 컨테이너가 private final StudentService StudentService; 로 한번에 처리하게 됨
+==> @controller, @service 의 역할임.
+
+public class A{
+
+        public A(){}
+}
+
+public class B{
+        A obj;
+
+        public B(){
+                obj= new A()
+        }
+
+        public void setObj(){
+                obj = new A()
+        }
+}
+
+
+
+
+
+관계 
+1:1       @OneToOne
+1:N       @ManyToOne <=> OneToMany
+m:n       @ManyToMany
+
+
+프록시 (먼저 응답하는 녀석) => DB조회
+
+ORM : 객체 = 테이블  매핑해줌
+=> 자바에서 '하이버네이트' 가 담당  (라이브러리임)
+=> Spring Data JPA (스프링 라이브러리임) : 영속성이란 개념으로 관리해줌
+                                                        save(entity) : entity가 영속 상태(managed)여야 한다.
+                                                        JPA가 관리하는 캐시같은 공간에 DB의 데이터를 끌고 오면 '영속' 상태라고 함
+
+JpaRepository => CRUD 기능 있음
+
+@Query(from Board) : Entity 기준
+@Query(from Board, nativeQuery = true) : 실 SQL 기준
+
++ QueryDSL : 동적인 쿼리 작성
+QuerydslPredicateExecutor 인터페이스 제공 : 정해진 메서드로 조건 검색, 쿼리 작성 자유도가 낮은 편
+
+QuerydslRepositorySupport 추상 클래스 제공 : 직접 쿼리 작성 가능, 쿼리 작성 자유도가 높은 편
+
+인터페이스
+interface Parent{
+
+        void sum();      (중괄호가 없음)
+        void div();
+}
+
+추상 클래스
+abstract class Parent{
+
+        // 추상 메서드
+        abstract void sum();
+        void div(){
+                ...
+        }
+}
+
+// 구현 클래스가 필요함
+class Child implements Parent{
+        void sum(){
+                ...
+        };
+        void div(){
+                ...
+        };
+}
+
+추상 클래스
+class Child extends Parent{
+
+      void sum(){
+        ...
+      }
+}
+
+인터페이스는 틀만 만들어줌 = template
+
+
+
+class Parent{
+        private int age;
+
+        public Parent(int age){
+                this.age = age;
+        }
+
+}
+
+class Child extends Parent{
+        private String name;
+
+        public Child(int age, String name){
+                super(age);
+                this.name = name;
+        }
+}
+
+초기화 할때:  
+Child child = new Child(20, "홍길동");
+
+Child child = new Child();
+child.setAge(25);
+child.setName("홍길동")
+
+-----------------------------
+builder() 사용시:
+Child child = Child.builder().age(25).name("홍길동").build()
+
+
+--------------------------
+제네릭스(Generic) : <E>    이런 녀석들
+자바에서 클래스나 메서드를 작성할 때 사용할 자료형을 미리 정하지 않고 실제로 사용하는 시점에 지정
+
+PageResultDto<Object>      타입지정 안하고 적으면 기본적으로 Object로 들어옴 -> 매우 귀찮음
+==> PageResultDto<Book>
+
+각 상황마다 BookDto, BoardDto, MemberDto 같이 다른 타입을 담을 상황이 올 수가 있음    =>   <E>  사용...    K, V, T, E 등등...
+

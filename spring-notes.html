@@ -1,0 +1,2438 @@
+<title>Spring 학습 노트</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: 왼쪽 고정 사이드바(주제 탭) + 오른쪽 한 주제씩 보여 주는 본문. 레이어마다 고정 색을 줘서 어느 탭에서든 같은 색 = 같은 레이어 */
+:root {
+  --bg: #f4f5f1;
+  --surface: #ffffff;
+  --ink: #1b201c;
+  --muted: #5b655d;
+  --line: #dde2d9;
+  --accent: #2c6a3d;
+  --accent-soft: #e2ede4;
+  --warn: #8f5410;
+  --warn-soft: #f7ecda;
+  --code-bg: #eef1ea;
+  --l-front: #4a5560;
+  --l-ctrl: #2c5ea6;
+  --l-svc: #6a4ea2;
+  --l-repo: #1d7871;
+  --l-ent: #9b5e17;
+  --l-dto: #a3407a;
+  --l-db: #3d4a42;
+  --hl-kw: #8a2f6b;
+  --hl-str: #2c6a3d;
+  --hl-com: #7c857e;
+  --hl-ann: #9b5e17;
+  --hl-type: #2c5ea6;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121613; --surface: #191e1a; --ink: #e3e8e1; --muted: #98a39a; --line: #2a312c;
+    --accent: #7dc191; --accent-soft: #1d2d22; --warn: #e2a95b; --warn-soft: #2d2316; --code-bg: #161b17;
+    --l-front: #a7b2bb; --l-ctrl: #80a8e8; --l-svc: #b49be8; --l-repo: #6dc8bf; --l-ent: #e4a65e; --l-dto: #e68cbd; --l-db: #a9b8ad;
+    --hl-kw: #e48cc7; --hl-str: #8fd0a1; --hl-com: #7a857c; --hl-ann: #e4a65e; --hl-type: #80a8e8;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121613; --surface: #191e1a; --ink: #e3e8e1; --muted: #98a39a; --line: #2a312c;
+  --accent: #7dc191; --accent-soft: #1d2d22; --warn: #e2a95b; --warn-soft: #2d2316; --code-bg: #161b17;
+  --l-front: #a7b2bb; --l-ctrl: #80a8e8; --l-svc: #b49be8; --l-repo: #6dc8bf; --l-ent: #e4a65e; --l-dto: #e68cbd; --l-db: #a9b8ad;
+  --hl-kw: #e48cc7; --hl-str: #8fd0a1; --hl-com: #7a857c; --hl-ann: #e4a65e; --hl-type: #80a8e8;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 15.5px; line-height: 1.75;
+  word-break: keep-all; overflow-wrap: anywhere;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+
+.app { display: grid; grid-template-columns: 252px minmax(0, 1fr); min-height: 100vh; }
+
+/* sidebar */
+.side {
+  position: sticky; top: env(safe-area-inset-top, 0px); align-self: start;
+  height: calc(100vh - env(safe-area-inset-top, 0px)); overflow-y: auto;
+  border-right: 1px solid var(--line); background: var(--surface);
+  padding-block: 28px 32px;
+  padding-left: max(18px, env(safe-area-inset-left, 0px)); padding-right: 14px;
+  display: flex; flex-direction: column; gap: 22px;
+}
+.brand { display: flex; flex-direction: column; gap: 2px; padding-left: 10px; }
+.brand b { font-size: 17px; letter-spacing: -0.01em; }
+.brand span { font-size: 12.5px; color: var(--muted); }
+.navgroup { display: flex; flex-direction: column; gap: 2px; }
+.navgroup h4 {
+  margin: 0 0 4px; padding-left: 10px; font-size: 11px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+}
+.tabbtn {
+  all: unset; cursor: pointer; display: flex; align-items: baseline; gap: 10px;
+  padding: 7px 10px; border-radius: 7px; font-size: 14.5px; color: var(--ink);
+}
+.tabbtn .n { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); min-width: 18px; font-variant-numeric: tabular-nums; }
+.tabbtn:hover { background: var(--code-bg); }
+.tabbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.tabbtn[aria-selected="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.tabbtn[aria-selected="true"] .n { color: var(--accent); }
+
+/* main */
+main {
+  min-width: 0;
+  padding-block: 44px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.page { max-width: 780px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: var(--accent); text-transform: uppercase; }
+h1 { font-size: 30px; line-height: 1.3; margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
+h2 { font-size: 21px; line-height: 1.4; margin: 18px 0 0; letter-spacing: -0.01em; text-wrap: balance; }
+h3 { font-size: 16.5px; margin: 6px 0 0; }
+p { margin: 0; }
+.lead { font-size: 16.5px; color: var(--muted); }
+ul, ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 6px; }
+code { font-family: var(--font-mono); font-size: 0.88em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+a { color: var(--accent); }
+strong { font-weight: 600; }
+
+/* code block */
+.code { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--code-bg); }
+.code .file { font-family: var(--font-mono); font-size: 12px; color: var(--muted); padding: 7px 14px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.code pre { margin: 0; padding: 14px 16px; overflow-x: auto; font-family: var(--font-mono); font-size: 13px; line-height: 1.65; }
+.code pre code { background: none; padding: 0; font-size: inherit; }
+.hljs-keyword, .hljs-built_in, .hljs-literal { color: var(--hl-kw); }
+.hljs-string, .hljs-attr + .hljs-string { color: var(--hl-str); }
+.hljs-comment { color: var(--hl-com); font-style: italic; }
+.hljs-meta { color: var(--hl-ann); }
+.hljs-title, .hljs-type, .hljs-title.class_ { color: var(--hl-type); }
+.hljs-number { color: var(--hl-ann); }
+.hljs-attr { color: var(--hl-type); }
+
+/* callouts */
+.note, .warn { border-radius: 8px; padding: 13px 16px; display: flex; flex-direction: column; gap: 6px; }
+.note { background: var(--accent-soft); }
+.warn { background: var(--warn-soft); }
+.note > b, .warn > b { font-size: 13px; letter-spacing: 0.02em; }
+.note > b { color: var(--accent); }
+.warn > b { color: var(--warn); }
+
+/* tables */
+.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 9px 13px; border-bottom: 1px solid var(--line); }
+th { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.03em; background: var(--code-bg); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+table.wide { min-width: 900px; }
+table.wide td, table.wide th { overflow-wrap: normal; }
+table.wide td:first-child { white-space: nowrap; }
+
+/* layer chips */
+.chip { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 99px; border: 1.5px solid currentColor; line-height: 1.6; white-space: nowrap; }
+.c-front { color: var(--l-front); } .c-ctrl { color: var(--l-ctrl); } .c-svc { color: var(--l-svc); }
+.c-repo { color: var(--l-repo); } .c-ent { color: var(--l-ent); } .c-dto { color: var(--l-dto); } .c-db { color: var(--l-db); }
+
+/* flow diagram */
+.flow { display: flex; flex-direction: column; gap: 0; }
+.stage { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 16px; align-items: start; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid currentColor; border-radius: 8px; }
+.stage > div:first-child b { display: block; font-size: 15px; }
+.stage > div:first-child small { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); }
+.stage .body { color: var(--ink); font-size: 14.5px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.arrow { font-family: var(--font-mono); font-size: 12px; color: var(--muted); padding: 5px 0 5px 22px; border-left: 2px dashed var(--line); margin-left: 24px; }
+
+/* tree */
+.tree { font-family: var(--font-mono); font-size: 13px; line-height: 1.8; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; white-space: pre; }
+.tree .cm { color: var(--muted); }
+
+/* steps (real sequence) */
+.steps { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 14px; counter-reset: s; }
+.steps > li { counter-increment: s; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; }
+.steps > li::before { content: counter(s); font-family: var(--font-mono); font-size: 13px; font-weight: 500; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); margin-top: 2px; }
+.steps > li > div { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+
+/* annotation dictionary */
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.filters button { all: unset; cursor: pointer; font-size: 13px; padding: 4px 12px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); }
+.filters button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.filters button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#ann-q { flex: 1 1 180px; min-width: 0; font: inherit; font-size: 14px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); }
+#ann-q:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.ann-list { display: flex; flex-direction: column; gap: 10px; }
+.ann { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 14px; }
+.ann .nm { font-family: var(--font-mono); font-size: 14px; font-weight: 500; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.ann .nm small { font-family: var(--font-body); font-size: 11.5px; color: var(--muted); font-weight: 400; }
+.ann .d { font-size: 14.5px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.ann .d .ex { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+.empty { color: var(--muted); font-size: 14px; }
+
+/* pager */
+.pager { display: flex; justify-content: space-between; gap: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.pager button { all: unset; cursor: pointer; display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); max-width: 48%; }
+.pager button small { font-size: 11.5px; color: var(--muted); }
+.pager button b { font-size: 14px; font-weight: 600; }
+.pager button.next { margin-left: auto; text-align: right; }
+.pager button:hover { border-color: var(--accent); }
+.pager button:focus-visible { outline: 2px solid var(--accent); }
+
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.card h3 { margin: 0; }
+
+/* line numbers */
+.code pre { tab-size: 4; }
+.code code.ln-on { counter-reset: l; display: block; }
+.code code.ln-on .ln { display: block; position: relative; padding-left: 3.2em; min-height: 1.65em; }
+.code code.ln-on .ln::before { counter-increment: l; content: counter(l); position: absolute; left: 0; width: 2.2em; text-align: right; color: var(--muted); opacity: .7; font-variant-numeric: tabular-nums; }
+.cap { font-size: 13px; color: var(--muted); margin-top: -10px; }
+
+/* line-by-line explanation */
+.explain { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); overflow: hidden; }
+.explain > div { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 14px; padding: 10px 14px; border-bottom: 1px solid var(--line); align-items: start; }
+.explain > div:last-child { border-bottom: 0; }
+.explain > div > code:first-child, .explain > div > code { white-space: normal; overflow-wrap: anywhere; justify-self: start; }
+.explain > div > p { font-size: 14.5px; }
+.explain .k { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.explain .k br { display: none; }
+
+/* progress through the 9 files */
+.prog { display: flex; flex-wrap: wrap; gap: 6px; }
+.prog span { font-family: var(--font-mono); font-size: 12px; padding: 3px 9px; border-radius: 6px; border: 1px solid var(--line); color: var(--muted); background: var(--surface); }
+.prog span.done { color: var(--accent); border-color: transparent; background: var(--accent-soft); }
+.prog span.now { color: var(--surface); background: var(--accent); border-color: var(--accent); font-weight: 500; }
+
+.check { border: 1.5px dashed var(--accent); border-radius: 8px; padding: 13px 16px; display: flex; flex-direction: column; gap: 6px; }
+.check > b { font-size: 13px; color: var(--accent); }
+.checklist { list-style: none; padding: 0; }
+.checklist li { padding-left: 26px; position: relative; }
+.checklist li::before { content: ""; position: absolute; left: 0; top: .45em; width: 14px; height: 14px; border: 1.5px solid var(--accent); border-radius: 3px; }
+@media (max-width: 880px) { .explain > div { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+
+@media (max-width: 880px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .side {
+    height: auto; flex-direction: row; gap: 0; overflow-x: auto; overflow-y: hidden;
+    border-right: 0; border-bottom: 1px solid var(--line); z-index: 5;
+    padding-block: 8px;
+    padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px));
+  }
+  .brand, .navgroup h4 { display: none; }
+  .navgroup { flex-direction: row; gap: 2px; }
+  .tabbtn { white-space: nowrap; font-size: 13.5px; padding: 6px 10px; }
+  main { padding-block: 26px 60px; }
+  .page { scroll-margin-top: 64px; }
+  h1 { font-size: 25px; }
+  .stage, .ann { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .two { grid-template-columns: minmax(0, 1fr); }
+  .pager button { max-width: 100%; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .page { animation: rise .22s ease-out; }
+  @keyframes rise { from { transform: translateY(6px); } to { transform: none; } }
+}
+</style>
+
+<div class="app">
+<nav class="side" aria-label="주제">
+  <div class="brand"><b>Spring 학습 노트</b><span>basic → demo → memo → book</span></div>
+  <div class="navgroup" role="tablist">
+    <h4>큰 그림</h4>
+    <button class="tabbtn" role="tab" data-tab="overview"><span class="n">01</span>요청 하나의 여행</button>
+    <button class="tabbtn" role="tab" data-tab="folders"><span class="n">02</span>폴더와 파일의 역할</button>
+  </div>
+  <div class="navgroup" role="tablist">
+    <h4>자바 문법</h4>
+    <button class="tabbtn" role="tab" data-tab="java"><span class="n">03</span>클래스와 객체</button>
+    <button class="tabbtn" role="tab" data-tab="java2"><span class="n">04</span>List · 람다 · Optional</button>
+  </div>
+  <div class="navgroup" role="tablist">
+    <h4>스프링</h4>
+    <button class="tabbtn" role="tab" data-tab="bean"><span class="n">05</span>Bean과 의존성 주입</button>
+    <button class="tabbtn" role="tab" data-tab="front"><span class="n">06</span>프론트와의 통신</button>
+    <button class="tabbtn" role="tab" data-tab="jpa"><span class="n">07</span>JPA와 데이터베이스</button>
+    <button class="tabbtn" role="tab" data-tab="dto"><span class="n">08</span>DTO와 ModelMapper</button>
+  </div>
+  <div class="navgroup" role="tablist">
+    <h4>CRUD 처음부터 (book)</h4>
+    <button class="tabbtn" role="tab" data-tab="crud1"><span class="n">09</span>목표와 프로젝트 설정</button>
+    <button class="tabbtn" role="tab" data-tab="crud2"><span class="n">10</span>Entity · Repository</button>
+    <button class="tabbtn" role="tab" data-tab="crud3"><span class="n">11</span>테스트로 DB 확인</button>
+    <button class="tabbtn" role="tab" data-tab="crud4"><span class="n">12</span>DTO · ModelMapper</button>
+    <button class="tabbtn" role="tab" data-tab="crud5"><span class="n">13</span>Service</button>
+    <button class="tabbtn" role="tab" data-tab="crud6"><span class="n">14</span>Controller · Swagger</button>
+    <button class="tabbtn" role="tab" data-tab="crud7"><span class="n">15</span>C·R·U·D 흐름 추적</button>
+  </div>
+  <div class="navgroup" role="tablist">
+    <h4>JPA 심화 (10/21)</h4>
+    <button class="tabbtn" role="tab" data-tab="sqllog"><span class="n">16</span>터미널 SQL 로그 읽기</button>
+    <button class="tabbtn" role="tab" data-tab="relation"><span class="n">17</span>연관관계 4가지와 JOIN</button>
+    <button class="tabbtn" role="tab" data-tab="fetch"><span class="n">18</span>LAZY와 EAGER</button>
+    <button class="tabbtn" role="tab" data-tab="persist"><span class="n">19</span>영속성 컨텍스트</button>
+  </div>
+  <div class="navgroup" role="tablist">
+    <h4>참고</h4>
+    <button class="tabbtn" role="tab" data-tab="ann"><span class="n">20</span>어노테이션 사전</button>
+    <button class="tabbtn" role="tab" data-tab="errors"><span class="n">21</span>자주 만난 에러</button>
+    <button class="tabbtn" role="tab" data-tab="env"><span class="n">22</span>환경과 명령어</button>
+  </div>
+</nav>
+
+<main>
+
+<!-- ============ 01 OVERVIEW ============ -->
+<section class="page" id="overview" role="tabpanel">
+  <div class="eyebrow">01 · 큰 그림</div>
+  <h1>요청 하나가 서버를 지나가는 길</h1>
+  <p class="lead">스프링 백엔드에서 하는 일은 결국 하나예요. 화면이 보낸 요청을 받아서, DB에서 필요한 걸 꺼내거나 바꾸고, 결과를 다시 화면에 돌려주는 것. 이 일을 여러 층(레이어)으로 나눠서 각 파일이 한 가지만 맡게 해요.</p>
+
+  <p>아래는 book 프로젝트에서 <code>GET /books/14</code>(14번 책 하나 보여 줘)를 보냈을 때 실제로 지나가는 순서예요. 색깔은 이 노트 전체에서 같은 레이어를 뜻해요.</p>
+
+  <div class="flow">
+    <div class="stage c-front"><div><b>화면</b><small>브라우저 · React · Swagger</small></div>
+      <div class="body"><span><code>fetch("http://localhost:8080/books/14")</code> 로 요청을 보내요.</span><span>HTTP 요청 = 주소(URL) + 방식(GET/POST/PUT/DELETE) + 필요하면 본문(JSON).</span></div></div>
+    <div class="arrow">HTTP 요청 GET /books/14</div>
+    <div class="stage c-ctrl"><div><b>Controller</b><small>BookController.java</small></div>
+      <div class="body"><span>주소를 보고 어느 메서드가 받을지 정해요. <code>@GetMapping("/{id}")</code>가 받아서 주소의 14를 <code>Long id</code>에 넣어요.</span><span>직접 일은 안 하고 Service에게 시켜요: <code>service.readId(id)</code></span></div></div>
+    <div class="arrow">메서드 호출 readId(14)</div>
+    <div class="stage c-svc"><div><b>Service</b><small>BookService.java</small></div>
+      <div class="body"><span>실제 업무 로직을 담당해요. "없으면 에러", "가격만 바꾸기" 같은 규칙이 여기 들어가요.</span><span>DB가 필요하면 Repository에게 부탁해요: <code>bookRepository.findById(id)</code></span></div></div>
+    <div class="arrow">findById(14)</div>
+    <div class="stage c-repo"><div><b>Repository</b><small>BookRepository.java</small></div>
+      <div class="body"><span>DB 담당이에요. 인터페이스만 만들어 두면 JPA가 SQL을 대신 만들어 줘요.</span><span><code>select ... from book where id=14</code></span></div></div>
+    <div class="arrow">SQL</div>
+    <div class="stage c-db"><div><b>Oracle DB</b><small>oracle-db 컨테이너</small></div>
+      <div class="body"><span>book 테이블의 한 줄(row)을 돌려줘요.</span></div></div>
+    <div class="arrow">한 줄 → Entity 객체로 변환</div>
+    <div class="stage c-ent"><div><b>Entity</b><small>Book.java</small></div>
+      <div class="body"><span>테이블 한 줄을 그대로 옮긴 자바 객체예요. <code>Book(id=14, isbn=A1010101, title=파워 자바1, ...)</code></span></div></div>
+    <div class="arrow">Service에서 mapper.map(book, BookRequestDto.class)</div>
+    <div class="stage c-dto"><div><b>DTO</b><small>BookRequestDto.java</small></div>
+      <div class="body"><span>화면에 보내도 되는 값만 담은 상자예요. Entity를 바로 내보내지 않고 한 번 옮겨 담아요.</span></div></div>
+    <div class="arrow">Controller가 return → JSON으로 자동 변환</div>
+    <div class="stage c-front"><div><b>화면</b><small>응답 200 OK</small></div>
+      <div class="body"><code>{"id":14,"isbn":"A1010101","title":"파워 자바1","price":36000,"author":"홍길동1"}</code></div></div>
+  </div>
+
+  <h2>한 줄로 외우기</h2>
+  <div class="note"><b>요청은 내려가고, 결과는 올라와요</b>
+    <p>화면 → <span class="chip c-ctrl">Controller</span> → <span class="chip c-svc">Service</span> → <span class="chip c-repo">Repository</span> → DB<br>DB → <span class="chip c-ent">Entity</span> → (Service가 변환) → <span class="chip c-dto">DTO</span> → Controller → JSON → 화면</p>
+  </div>
+
+  <h2>왜 굳이 나눌까?</h2>
+  <ul>
+    <li><strong>고칠 곳이 명확해져요.</strong> 주소가 틀리면 Controller, 규칙이 틀리면 Service, 조회가 틀리면 Repository를 보면 돼요.</li>
+    <li><strong>재사용이 돼요.</strong> 같은 <code>readId()</code>를 다른 Controller에서도 부를 수 있어요.</li>
+    <li><strong>DB 구조를 숨길 수 있어요.</strong> Entity는 테이블 모양 그대로라 비밀번호 같은 값이 섞일 수 있어서, 화면엔 DTO만 보내요.</li>
+  </ul>
+
+  <h2>FastAPI와 비교하면</h2>
+  <div class="tbl"><table>
+    <tr><th>역할</th><th>Spring</th><th>FastAPI</th></tr>
+    <tr><td>주소 받기</td><td><span class="chip c-ctrl">Controller</span> <code>@GetMapping</code></td><td>router <code>@router.get</code></td></tr>
+    <tr><td>업무 로직</td><td><span class="chip c-svc">Service</span></td><td>service / crud 함수</td></tr>
+    <tr><td>DB 접근</td><td><span class="chip c-repo">Repository</span> (JPA)</td><td>SQLAlchemy Session</td></tr>
+    <tr><td>테이블 모양</td><td><span class="chip c-ent">Entity</span> <code>@Entity</code></td><td>models.py</td></tr>
+    <tr><td>주고받는 모양</td><td><span class="chip c-dto">DTO</span></td><td>Pydantic schema</td></tr>
+    <tr><td>객체 넣어 주기</td><td>생성자 주입 (<code>@RequiredArgsConstructor</code>)</td><td><code>Depends(get_db)</code></td></tr>
+  </table></div>
+</section>
+
+<!-- ============ 02 FOLDERS ============ -->
+<section class="page" id="folders" role="tabpanel" hidden>
+  <div class="eyebrow">02 · 큰 그림</div>
+  <h1>폴더와 파일의 역할</h1>
+  <p class="lead">스프링 프로젝트는 폴더 위치가 곧 규칙이에요. 파일을 엉뚱한 곳에 두면 코드가 맞아도 스프링이 못 찾아요.</p>
+
+  <div class="tree">book/
+├── build.gradle            <span class="cm">← 사용할 라이브러리 목록 (npm의 package.json)</span>
+├── settings.gradle         <span class="cm">← 프로젝트 이름 (rootProject.name = 'book')</span>
+├── gradlew, gradle/        <span class="cm">← Gradle 실행기. 설치 없이 ./gradlew 로 빌드·실행</span>
+├── build/                  <span class="cm">← 컴파일 결과물. 자동 생성되니 건드리지 않기</span>
+└── src/
+    ├── main/
+    │   ├── java/com/example/book/
+    │   │   ├── BookApplication.java   <span class="cm">← main() 시작점. 여기서부터 아래 패키지를 스캔</span>
+    │   │   ├── config/      RootConfig.java      <span class="cm">← 설정, 직접 만드는 Bean (ModelMapper)</span>
+    │   │   ├── controller/  BookController.java  <span class="cm">← 주소 받기</span>
+    │   │   ├── service/     BookService.java     <span class="cm">← 업무 로직</span>
+    │   │   ├── repository/  BookRepository.java  <span class="cm">← DB 접근</span>
+    │   │   ├── entity/      Book.java, Team.java <span class="cm">← 테이블 모양</span>
+    │   │   └── dto/         BookRequestDto.java  <span class="cm">← 주고받는 데이터 모양</span>
+    │   └── resources/
+    │       ├── application.properties  <span class="cm">← DB 주소, 계정, 로그 설정</span>
+    │       ├── templates/   <span class="cm">← Thymeleaf HTML (@Controller가 돌려주는 화면)</span>
+    │       └── static/      <span class="cm">← css, js, 이미지 그대로 제공</span>
+    └── test/java/com/example/book/
+        ├── BookRepositoryTest.java   <span class="cm">← DB 넣기·읽기 연습 (JUnit)</span>
+        ├── TeamTest.java
+        ├── LockerTest.java
+        └── PersistenceTest.java    <span class="cm">← 영속성 컨텍스트 실습 (10/21)</span></div>
+
+  <h2>꼭 지켜야 하는 위치 규칙 3가지</h2>
+  <ol>
+    <li><strong>모든 코드는 시작 클래스의 패키지 아래에.</strong> <code>BookApplication</code>이 <code>com.example.book</code>에 있으니, <code>com.example.book.xxx</code> 안에 있어야 스프링이 찾아서 Bean으로 만들어요. 이걸 컴포넌트 스캔이라고 해요.</li>
+    <li><strong>테스트도 같은 패키지 이름으로.</strong> <code>src/test/java/com/example/book/</code>에 두고 첫 줄에 <code>package com.example.book;</code>. 다른 패키지에 두면 "Unable to find a @SpringBootConfiguration" 에러가 나요. (LockerTest, TeamTest를 옮긴 이유)</li>
+    <li><strong>파일 이름 = public 클래스 이름.</strong> <code>Team.java</code> 안에는 <code>public class Team</code>만. <code>Team copy.java</code>처럼 복사본이 있으면 같은 클래스가 두 개라 에러가 나요.</li>
+  </ol>
+
+  <h2>package와 import</h2>
+  <p>패키지는 자바 파일의 주소예요. 다른 폴더의 클래스를 쓰려면 import로 정확한 주소를 알려 줘야 해요.</p>
+  <script type="text/plain" class="src" data-lang="java" data-file="service/BookService.java">package com.example.book.service;   // 내 주소
+
+import java.util.List;                     // 자바 기본 List
+import com.example.book.entity.Book;       // 우리가 만든 Book
+import com.example.book.dto.BookRequestDto;</script>
+  <div class="warn"><b>자동 import 함정</b>
+    <p>VS Code가 이름만 보고 엉뚱한 걸 가져올 때가 많아요. 빨간줄이 이상하게 뜨면 import부터 보세요.</p>
+    <ul>
+      <li><code>java.awt.List</code> ✗ → <code>java.util.List</code> ✓</li>
+      <li><code>java.awt.print.Book</code> ✗ → <code>com.example.book.entity.Book</code> ✓</li>
+      <li><code>io.swagger.v3.oas.annotations.parameters.RequestBody</code> ✗ → <code>org.springframework.web.bind.annotation.RequestBody</code> ✓</li>
+    </ul>
+  </div>
+
+  <h2>build.gradle 읽는 법</h2>
+  <script type="text/plain" class="src" data-lang="plaintext" data-file="book/build.gradle">dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'   // Controller, 웹 서버(톰캣)
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // JPA, Repository
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'// 템플릿 HTML
+    implementation 'org.modelmapper:modelmapper:3.2.7'                     // Entity ↔ DTO 변환
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1' // Swagger 화면
+    compileOnly 'org.projectlombok:lombok'          // @Getter 등 (컴파일할 때만 필요)
+    annotationProcessor 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools' // 코드 바꾸면 자동 재시작
+    runtimeOnly 'com.oracle.database.jdbc:ojdbc17'  // Oracle 연결 드라이버
+}</script>
+  <p>새 라이브러리는 <a href="https://mvnrepository.com/" target="_blank" rel="noopener">mvnrepository.com</a>에서 찾아 Gradle 탭의 한 줄을 복사해 넣고, VS Code에서 <code>Java: Reload Projects</code>를 해요.</p>
+
+  <h2>application.properties</h2>
+  <script type="text/plain" class="src" data-lang="properties" data-file="resources/application.properties">spring.datasource.url = jdbc:oracle:thin:@localhost:1521/FREEPDB1
+spring.datasource.username=java_user
+spring.datasource.password=12345
+spring.jpa.hibernate.ddl-auto = update      # 엔티티가 바뀐 부분만 테이블에 반영
+spring.jpa.properties.hibernate.format_sql=true
+logging.level.org.hibernate.SQL=debug       # 실행된 SQL을 콘솔에 보여 줌</script>
+  <div class="tbl"><table>
+    <tr><th>ddl-auto</th><th>동작</th></tr>
+    <tr><td><code>create</code></td><td>시작할 때 테이블 지우고 새로 만듦 (데이터 날아감)</td></tr>
+    <tr><td><code>create-drop</code></td><td>create + 종료할 때 테이블 삭제</td></tr>
+    <tr><td><code>update</code></td><td>바뀐 부분만 반영. 수업에서 쓰는 값</td></tr>
+    <tr><td><code>validate</code></td><td>엔티티와 테이블이 맞는지 확인만 (개발 완료 후)</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ 03 JAVA ============ -->
+<section class="page" id="java" role="tabpanel" hidden>
+  <div class="eyebrow">03 · 자바 문법</div>
+  <h1>클래스와 객체</h1>
+  <p class="lead">자바는 모든 코드가 클래스 안에 있어요. 클래스는 설계도, 객체는 설계도로 찍어 낸 실물이에요. basic 프로젝트의 Board, User가 이걸 연습한 코드예요.</p>
+
+  <h2>데이터 타입</h2>
+  <div class="tbl"><table>
+    <tr><th>종류</th><th>기본 타입 (소문자)</th><th>객체 타입 (대문자)</th><th>예</th></tr>
+    <tr><td>정수</td><td><code>int</code> 4바이트, <code>long</code> 8바이트</td><td><code>Integer</code>, <code>Long</code></td><td><code>1L</code> ← 끝의 L이 long 표시</td></tr>
+    <tr><td>실수</td><td><code>float</code>, <code>double</code></td><td><code>Float</code>, <code>Double</code></td><td><code>3.14</code></td></tr>
+    <tr><td>문자</td><td><code>char</code></td><td><code>Character</code></td><td><code>'a'</code> 작은따옴표</td></tr>
+    <tr><td>문자열</td><td>—</td><td><code>String</code></td><td><code>"a"</code> 큰따옴표</td></tr>
+    <tr><td>참/거짓</td><td><code>boolean</code></td><td><code>Boolean</code></td><td><code>true</code></td></tr>
+  </table></div>
+  <div class="note"><b>id는 왜 Long일까?</b>
+    <p>기본 타입 <code>long</code>은 비어 있을 수 없어서 기본값이 0이에요. 객체 타입 <code>Long</code>은 <code>null</code>(값 없음)이 될 수 있어요. 새로 저장하기 전 Entity는 아직 id가 없으니 <code>null</code>이어야 해서 <code>Long</code>을 써요. 반대로 <code>price</code>는 항상 있으니 <code>int</code>.</p>
+  </div>
+
+  <h2>클래스의 구성: 필드, 생성자, 메서드</h2>
+  <script type="text/plain" class="src" data-lang="java" data-file="basic/src/ch1/Board.java">public class Board {
+    // 필드(멤버변수): 객체가 가지는 값
+    private Long id;
+    private String title;
+    private User user;          // 다른 객체도 필드가 될 수 있어요
+
+    // 생성자: new 할 때 필드를 채워 주는 특별한 메서드 (이름 = 클래스 이름, 반환 타입 없음)
+    public Board(Long id, String title) {
+        this.id = id;           // this.id = 내 필드, id = 들어온 값
+        this.title = title;
+    }
+
+    // 생성자 여러 개 가능 (파라미터 개수·타입이 달라야 함) → 오버로딩
+    public Board(Long id, String title, User user) { ... }
+
+    // getter / setter: private 필드를 밖에서 읽고 바꾸는 통로
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+
+    // toString: System.out.println(board) 할 때 보여 줄 글자
+    @Override
+    public String toString() { return "Board [id=" + id + ", title=" + title + "]"; }
+}</script>
+  <script type="text/plain" class="src" data-lang="java" data-file="basic/src/ch1/BoardMain.java">User user = new User(1L, "홍길동", "hong123@gmail.com");   // new = 객체 생성 → 생성자 호출
+Board board = new Board(1L, "게시글", user);
+System.out.println(board);   // toString()이 없으면 ch1.Board@6d06d69c 같은 주소가 찍혀요</script>
+
+  <h2>접근 제어자</h2>
+  <ul>
+    <li><code>public</code>: 어디서든 접근 가능</li>
+    <li><code>private</code>: 이 클래스 안에서만. 필드는 보통 private으로 숨기고 메서드로만 다루게 해요 (캡슐화).</li>
+  </ul>
+
+  <h2>setter 대신 의미 있는 메서드</h2>
+  <p>Entity에서는 <code>@Setter</code>를 빼고 필요한 변경만 메서드로 열어 두는 걸 연습했어요. 아무 값이나 바꿀 수 있는 setter보다 "가격만 바꿀 수 있다"는 의도가 드러나요.</p>
+  <script type="text/plain" class="src" data-lang="java" data-file="entity/Book.java">public void changePrice(int price) {
+    this.price = price;
+}
+// Memo.changeText(), TeamMember.changeTeam()도 같은 패턴</script>
+  <div class="two">
+    <div class="card"><h3>생성자</h3><p>처음 만들 때 한 번에 채우기. <code>new Board(1L, "제목")</code></p></div>
+    <div class="card"><h3>setter / change 메서드</h3><p>만든 다음에 값을 바꾸기. <code>book.changePrice(42000)</code></p></div>
+  </div>
+
+  <h2>enum: 정해진 값만 허용</h2>
+  <script type="text/plain" class="src" data-lang="java" data-file="demo/entity/constants/Grade.java">public enum Grade {
+    FRESHMAN, SOPHOMORE, JUNITOR, SENIOR
+}
+// student.setGrade(Grade.FRESHMAN);   다른 글자는 못 넣어요</script>
+
+  <h2>interface와 extends</h2>
+  <p>interface는 "이런 메서드가 있다"는 약속만 적은 틀이에요. Repository가 interface인 이유는 몸통(구현)을 스프링이 실행할 때 자동으로 만들어 주기 때문이에요.</p>
+  <script type="text/plain" class="src" data-lang="java" data-file="repository/BookRepository.java">public interface BookRepository extends JpaRepository<Book, Long> {
+    // extends: JpaRepository가 가진 save, findAll, findById, deleteById를 물려받음
+    // <Book, Long>: 다룰 Entity 타입, 그 Entity의 @Id 타입
+}</script>
+  <div class="warn"><b>순환 상속</b><p><code>TeamRepository extends TeamRepository</code>처럼 자기 자신을 상속하면 "Cycle detected" 에러예요. 상속 대상은 항상 <code>JpaRepository&lt;엔티티, Long&gt;</code>.</p></div>
+</section>
+
+<!-- ============ 04 JAVA2 ============ -->
+<section class="page" id="java2" role="tabpanel" hidden>
+  <div class="eyebrow">04 · 자바 문법</div>
+  <h1>List · 람다 · Optional</h1>
+  <p class="lead">Service 코드에서 매일 보는 세 가지예요. 여러 개 담기(List), 하나씩 바꾸기(stream + 람다), 없을 수도 있는 값(Optional).</p>
+
+  <h2>List와 제네릭</h2>
+  <script type="text/plain" class="src" data-lang="java">List<Book> books = new ArrayList<>();   // <Book>: 이 List엔 Book만 담겠다 (제네릭)
+books.add(book);
+books.size();
+books.get(0);</script>
+  <p><code>List</code>는 interface, <code>ArrayList</code>는 실제 구현이에요. 그래서 왼쪽은 List, 오른쪽은 new ArrayList로 써요.</p>
+
+  <h2>for문으로 하나씩 바꾸기</h2>
+  <p>demo의 StudentService가 처음 배운 방식이에요. Entity 목록을 돌면서 DTO로 옮겨 담아요.</p>
+  <script type="text/plain" class="src" data-lang="java" data-file="demo/service/StudentService.java">List<Student> list = studentRepository.findAll();
+List<StudentDto> students = new ArrayList<>();
+for (Student s : list) {          // list 안의 Student를 하나씩 s로
+    StudentDto dto = new StudentDto();
+    dto.setId(s.getId());
+    dto.setName(s.getName());
+    students.add(dto);
+}</script>
+
+  <h2>stream + 람다로 같은 일</h2>
+  <script type="text/plain" class="src" data-lang="java" data-file="book/service/BookService.java">return books.stream()                                       // 1. 하나씩 흘려보내고
+        .map(book -> mapper.map(book, BookRequestDto.class))  // 2. 각각 DTO로 바꾸고
+        .collect(Collectors.toList());                        // 3. 다시 List로 모으기</script>
+  <div class="note"><b>람다 읽는 법</b>
+    <p><code>book -> mapper.map(book, ...)</code>는 "book을 받아서 오른쪽 결과를 돌려주는 짧은 함수"예요. JS의 화살표 함수 <code>book => ...</code>와 같은데, 자바는 <code>-></code>(하이픈)을 써요. <code>=></code>를 쓰면 문법 에러예요.</p>
+  </div>
+
+  <h2>반복해서 여러 개 만들기</h2>
+  <script type="text/plain" class="src" data-lang="java">IntStream.rangeClosed(1, 11).forEach(i -> { ... });   // 1~11 (끝 포함)
+LongStream.range(1, 11).forEach(i -> { ... });          // 1~10 (끝 미포함)</script>
+
+  <h2>Optional: 있을 수도, 없을 수도</h2>
+  <p><code>findById</code>는 결과가 없을 수 있어서 <code>Book</code>이 아니라 <code>Optional&lt;Book&gt;</code>라는 상자에 담아 줘요. 꺼내는 방법에 따라 없을 때 동작이 달라요.</p>
+  <div class="tbl"><table>
+    <tr><th>꺼내는 방법</th><th>값이 없으면</th></tr>
+    <tr><td><code>.get()</code></td><td><code>NoSuchElementException</code> → 서버 500</td></tr>
+    <tr><td><code>.orElseThrow()</code></td><td>같은 예외지만 "없으면 에러"라는 의도가 드러남. 수업에서 권장</td></tr>
+    <tr><td><code>.orElseThrow(() -> new 원하는예외())</code></td><td>원하는 예외로 바꿔서 던짐 (나중에 404 처리에 사용)</td></tr>
+    <tr><td><code>.orElse(기본값)</code></td><td>기본값 사용</td></tr>
+  </table></div>
+  <script type="text/plain" class="src" data-lang="java" data-file="repository/BookRepository.java">Book findByIsbn(String isbn);                // 없으면 null 반환
+Optional<Book> findByTitle(String title);    // 없으면 빈 Optional</script>
+  <div class="warn"><b>null을 조심</b><p><code>findByIsbn</code>처럼 Optional이 아닌 타입은 없으면 <code>null</code>이 와요. 그걸 <code>mapper.map(null, ...)</code>에 넣으면 "source cannot be null" 에러가 나요.</p></div>
+</section>
+
+<!-- ============ 05 BEAN ============ -->
+<section class="page" id="bean" role="tabpanel" hidden>
+  <div class="eyebrow">05 · 스프링</div>
+  <h1>Bean과 의존성 주입</h1>
+  <p class="lead">스프링을 쓰면 <code>new BookService()</code>를 직접 쓰지 않아요. 스프링이 대신 만들어서 필요한 곳에 넣어 줘요. 이게 스프링의 핵심이에요.</p>
+
+  <h2>서버가 켜질 때 일어나는 일</h2>
+  <ol class="steps">
+    <li><div><p><code>BookApplication</code>의 <code>main()</code>이 실행돼요. <code>@SpringBootApplication</code>이 붙어 있어요.</p></div></li>
+    <li><div><p><code>com.example.book</code> 아래 모든 패키지를 훑으면서 <code>@Controller</code>, <code>@Service</code>, <code>@Repository</code>, <code>@Configuration</code>이 붙은 클래스를 찾아요 (컴포넌트 스캔).</p></div></li>
+    <li><div><p>찾은 클래스마다 객체를 딱 하나씩 만들어 보관해요. 이 객체를 <strong>Bean</strong>, 보관하는 곳을 <strong>스프링 컨테이너</strong>라고 해요.</p></div></li>
+    <li><div><p>Bean끼리 필요한 걸 서로 넣어 줘요. BookController는 BookService가, BookService는 BookRepository와 ModelMapper가 필요하죠. 이걸 <strong>의존성 주입(DI)</strong>이라고 해요.</p></div></li>
+    <li><div><p>8080 포트에서 요청을 기다려요. "Started BookApplication" 로그가 뜨면 준비 완료.</p></div></li>
+  </ol>
+
+  <h2>생성자 주입: final + @RequiredArgsConstructor</h2>
+  <script type="text/plain" class="src" data-lang="java" data-file="service/BookService.java">@RequiredArgsConstructor   // final 필드를 받는 생성자를 Lombok이 만들어 줌
+@Service                   // 이 클래스를 Bean으로 등록
+public class BookService {
+    private final BookRepository bookRepository;   // 스프링이 생성자로 넣어 줌
+    private final ModelMapper mapper;
+}
+
+// Lombok이 만들어 주는 코드는 사실 이거예요
+public BookService(BookRepository bookRepository, ModelMapper mapper) {
+    this.bookRepository = bookRepository;
+    this.mapper = mapper;
+}</script>
+  <div class="note"><b>final을 빼먹으면?</b><p><code>@RequiredArgsConstructor</code>는 final 필드만 생성자에 넣어요. final이 없으면 주입이 안 돼서 그 필드는 null이고, 쓰는 순간 NullPointerException이 나요.</p></div>
+
+  <h2>테스트에서는 @Autowired</h2>
+  <p>테스트 클래스는 JUnit이 만들기 때문에 생성자 주입 대신 필드에 <code>@Autowired</code>를 붙여 받아요.</p>
+  <script type="text/plain" class="src" data-lang="java">@Autowired
+private BookRepository bookRepository;</script>
+
+  <h2>라이브러리 객체는 @Bean으로</h2>
+  <p>ModelMapper는 남이 만든 클래스라 <code>@Service</code>를 붙일 수 없어요. 그래서 설정 클래스에서 직접 만들어 Bean으로 등록해요.</p>
+  <script type="text/plain" class="src" data-lang="java" data-file="config/RootConfig.java">@Configuration          // 스프링 설정 파일
+public class RootConfig {
+    @Bean               // 이 메서드가 돌려주는 객체를 Bean으로 보관
+    ModelMapper getMapper() {
+        ModelMapper modelMapper = new ModelMapper();
+        modelMapper.getConfiguration()
+            .setFieldMatchingEnabled(true)                 // 필드끼리 직접 매칭
+            .setFieldAccessLevel(AccessLevel.PRIVATE)      // private 필드도 접근
+            .setMatchingStrategy(MatchingStrategies.LOOSE); // userName ↔ user_name 느슨하게
+        return modelMapper;
+    }
+}</script>
+  <div class="warn"><b>패키지가 다르면 Bean이 안 생겨요</b><p>memo에서 복사해 온 RootConfig의 패키지가 <code>com.example.memo.config</code>로 남아 있으면 book 스캔 범위 밖이라 ModelMapper Bean이 없어요. 그래서 BookService를 못 만들고 서버가 안 떠요.</p></div>
+</section>
+
+<!-- ============ 06 FRONT ============ -->
+<section class="page" id="front" role="tabpanel" hidden>
+  <div class="eyebrow">06 · 스프링</div>
+  <h1>프론트와의 통신</h1>
+  <p class="lead">프론트와 백엔드는 HTTP로만 대화해요. 프론트는 "어느 주소에, 어떤 방식으로, 무엇을" 보내고, 백엔드는 데이터(JSON)나 완성된 HTML을 돌려줘요.</p>
+
+  <h2>두 가지 응답 방식</h2>
+  <div class="two">
+    <div class="card"><h3><code>@Controller</code></h3><p>HTML 화면을 돌려줘요. 서버가 Thymeleaf로 HTML을 완성해서 보내요.</p><p>demo 프로젝트 (StudentController, HomeController)</p></div>
+    <div class="card"><h3><code>@RestController</code></h3><p>데이터(JSON)만 돌려줘요. 화면은 React 같은 프론트가 그려요.</p><p>memo, book 프로젝트</p></div>
+  </div>
+
+  <h2>방식 1: @Controller + Thymeleaf (demo)</h2>
+  <script type="text/plain" class="src" data-lang="java" data-file="demo/controller/StudentController.java">@RequestMapping("/student")
+@Controller
+public class StudentController {
+    @GetMapping("/list")
+    public void getStudents(Model model) {
+        model.addAttribute("list", studentService.getList());  // 화면에 "list"라는 이름으로 전달
+    }   // void → 주소와 같은 경로의 templates/student/list.html 을 찾아요
+}</script>
+  <script type="text/plain" class="src" data-lang="html" data-file="templates/student/list.html"><tr th:each="dto : ${list}">        <!-- list 안의 dto마다 한 줄씩 -->
+  <td th:text="${dto.name}"></td>     <!-- dto.getName() 값으로 채움 -->
+</tr></script>
+  <div class="tbl"><table>
+    <tr><th>반환 타입</th><th>어떤 HTML 파일을 쓰나</th></tr>
+    <tr><td><code>void</code></td><td>요청 주소와 같은 경로. <code>/student/list</code> → <code>templates/student/list.html</code></td></tr>
+    <tr><td><code>String</code></td><td>돌려준 글자와 같은 이름. <code>return "home";</code> → <code>templates/home.html</code></td></tr>
+  </table></div>
+
+  <h2>방식 2: @RestController + JSON (book)</h2>
+  <p>메서드가 돌려준 객체를 스프링(Jackson)이 자동으로 JSON으로 바꿔요. 들어온 JSON도 자동으로 DTO 객체로 바꿔 줘요.</p>
+  <div class="tbl"><table>
+    <tr><th>HTTP</th><th>주소</th><th>값을 받는 곳</th><th>BookController 메서드</th></tr>
+    <tr><td><code>GET</code></td><td><code>/books</code></td><td>—</td><td><code>getMemos()</code> 전체 목록</td></tr>
+    <tr><td><code>GET</code></td><td><code>/books/14</code></td><td>경로 → <code>@PathVariable Long id</code></td><td><code>getBookById</code></td></tr>
+    <tr><td><code>GET</code></td><td><code>/books/title?title=파워 자바1</code></td><td>쿼리 → <code>String title</code></td><td><code>getBookByTitle</code></td></tr>
+    <tr><td><code>POST</code></td><td><code>/books</code></td><td>본문 JSON → <code>@RequestBody BookRequestDto</code></td><td><code>postBook</code> 새 id 반환</td></tr>
+    <tr><td><code>PUT</code></td><td><code>/books/14</code></td><td>경로 + 본문 JSON</td><td><code>putBook</code> 가격 수정</td></tr>
+    <tr><td><code>DELETE</code></td><td><code>/books/14</code></td><td>경로</td><td><code>deleteMemo</code> → 204</td></tr>
+  </table></div>
+
+  <h2>값이 들어오는 세 가지 길</h2>
+  <div class="tbl"><table>
+    <tr><th>어디에 실려 오나</th><th>예</th><th>받는 법</th></tr>
+    <tr><td>경로 안</td><td><code>/books/14</code></td><td><code>@GetMapping("/{id}")</code> + <code>@PathVariable Long id</code></td></tr>
+    <tr><td>주소 뒤 ?</td><td><code>/books/isbn?isbn=A1010101</code></td><td>파라미터 이름을 같게 <code>String isbn</code> (생략 시 <code>@RequestParam</code>과 같음)</td></tr>
+    <tr><td>본문 JSON</td><td><code>{"price": 42000}</code></td><td><code>@RequestBody BookRequestDto dto</code></td></tr>
+    <tr><td>form 전송</td><td><code>&lt;form method="post"&gt;</code></td><td>어노테이션 없이 DTO (demo LoginDto, input의 name과 필드명이 같아야 함)</td></tr>
+  </table></div>
+  <div class="warn"><b>@RequestBody를 빼먹으면</b><p>에러 없이 DTO 필드가 전부 null로 들어와요. JSON 본문은 <code>@RequestBody</code>가 있어야만 읽어요. memo의 POST/PUT이 안 됐던 이유가 이거였어요.</p></div>
+
+  <h2>React에서 부르면</h2>
+  <script type="text/plain" class="src" data-lang="javascript" data-file="React 예시">// 목록
+const books = await fetch("http://localhost:8080/books").then(r => r.json());
+
+// 추가: 본문은 JSON 문자열, Content-Type 꼭 지정
+await fetch("http://localhost:8080/books", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ isbn: "B2020", title: "스프링 입문", price: 30000, author: "성춘향" }),
+});
+
+// 가격 수정
+await fetch("http://localhost:8080/books/14", {
+  method: "PUT",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ price: 42000 }),
+});
+
+// 삭제
+await fetch("http://localhost:8080/books/14", { method: "DELETE" });</script>
+  <div class="note"><b>나중에 만날 것: CORS</b><p>React 개발 서버(예: 5173 포트)에서 8080으로 요청하면 브라우저가 막을 수 있어요. 그땐 스프링 쪽에 허용 설정(<code>@CrossOrigin</code> 등)이 필요해요. Swagger는 같은 서버라 상관없어요.</p></div>
+
+  <h2>상태 코드</h2>
+  <div class="tbl"><table>
+    <tr><th>코드</th><th>뜻</th><th>우리 코드에서</th></tr>
+    <tr><td><code>200</code></td><td>성공 + 데이터 있음</td><td>대부분의 return</td></tr>
+    <tr><td><code>204</code></td><td>성공, 돌려줄 내용 없음</td><td><code>ResponseEntity.noContent().build()</code> (삭제)</td></tr>
+    <tr><td><code>400</code></td><td>요청이 잘못됨</td><td>JSON 형식 오류, 타입 불일치</td></tr>
+    <tr><td><code>404</code></td><td>그런 주소/데이터 없음</td><td>주소 오타</td></tr>
+    <tr><td><code>500</code></td><td>서버 코드에서 예외</td><td>없는 id를 <code>.get()</code>할 때</td></tr>
+  </table></div>
+
+  <h2>Swagger로 테스트</h2>
+  <p>서버를 켜고 <code>http://localhost:8080/swagger-ui/index.html</code>에 들어가면 Controller의 API가 목록으로 보이고, Try it out으로 직접 보낼 수 있어요. <code>@Tag</code>, <code>@Operation</code>은 그 화면에 보일 설명이에요.</p>
+</section>
+
+<!-- ============ 07 JPA ============ -->
+<section class="page" id="jpa" role="tabpanel" hidden>
+  <div class="eyebrow">07 · 스프링</div>
+  <h1>JPA와 데이터베이스</h1>
+  <p class="lead">JPA는 자바 객체(Entity)와 DB 테이블을 연결해 주는 기술이에요. SQL을 직접 쓰지 않고 자바 메서드로 넣고 꺼내요. 실제 SQL은 Hibernate가 만들어서 콘솔에 보여 줘요.</p>
+
+  <h2>Entity: 테이블 설계도</h2>
+  <script type="text/plain" class="src" data-lang="java" data-file="entity/Book.java">@Entity                    // 이 클래스 = 테이블 (이름은 클래스명 → book)
+@Builder @Getter @Setter @ToString
+@NoArgsConstructor         // JPA는 빈 생성자로 객체를 만들고 값을 채워요. 필수!
+@AllArgsConstructor        // @Builder가 쓰는 전체 생성자
+public class Book {
+
+    @Id                                                   // PK
+    @GeneratedValue(strategy = GenerationType.IDENTITY)   // 번호 자동 증가
+    private Long id;
+
+    @Column(nullable = false, unique = true)   // NOT NULL + 중복 불가
+    private String isbn;
+
+    @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false)
+    private int price;
+
+    @Column(nullable = false)
+    private String author;
+}</script>
+  <div class="tbl"><table>
+    <tr><th>자주 쓰는 설정</th><th>뜻</th><th>예</th></tr>
+    <tr><td><code>@Table(name="...")</code></td><td>테이블 이름 직접 지정</td><td>Student → <code>studenttbl</code>, Memo → <code>memotbl</code></td></tr>
+    <tr><td><code>@Column(name="...")</code></td><td>컬럼 이름 지정</td><td>Memo.id → <code>mno</code></td></tr>
+    <tr><td><code>length</code></td><td>문자 길이</td><td><code>length = 50</code></td></tr>
+    <tr><td><code>@Enumerated(EnumType.STRING)</code></td><td>enum을 글자로 저장</td><td><code>FRESHMAN</code> (기본은 0,1,2 숫자)</td></tr>
+  </table></div>
+
+  <h2>Repository가 공짜로 주는 메서드</h2>
+  <div class="tbl"><table>
+    <tr><th>메서드</th><th>하는 일</th><th>SQL</th></tr>
+    <tr><td><code>save(entity)</code></td><td>id가 없으면 추가, 있으면 수정</td><td>INSERT / UPDATE</td></tr>
+    <tr><td><code>findAll()</code></td><td>전체 조회 → List</td><td>SELECT *</td></tr>
+    <tr><td><code>findById(id)</code></td><td>하나 조회 → Optional</td><td>SELECT ... WHERE id=?</td></tr>
+    <tr><td><code>deleteById(id)</code></td><td>삭제</td><td>DELETE</td></tr>
+    <tr><td><code>count()</code></td><td>개수</td><td>SELECT COUNT</td></tr>
+  </table></div>
+
+  <h2>메서드 이름으로 쿼리 만들기</h2>
+  <p>규칙에 맞게 이름만 지으면 JPA가 SQL을 만들어 줘요. 필드 이름과 정확히 같아야 해요.</p>
+  <script type="text/plain" class="src" data-lang="java" data-file="repository/BookRepository.java">Book findByIsbn(String isbn);                 // where isbn = ?
+Optional<Book> findByTitle(String title);     // where title = ?
+// 더 해 볼 수 있는 것
+List<Book> findByAuthor(String author);
+List<Book> findByPriceGreaterThan(int price); // where price > ?
+List<Book> findByTitleContaining(String kw);  // where title like %kw%</script>
+
+  <h2>save는 추가일까 수정일까?</h2>
+  <ol class="steps">
+    <li><div><p><strong>추가:</strong> <code>Book.builder().isbn(...).build()</code>로 만든 객체는 id가 null이에요. <code>save</code>하면 INSERT하고, 새 id가 채워진 객체를 돌려줘요.</p></div></li>
+    <li><div><p><strong>수정:</strong> <code>findById</code>로 꺼낸 객체는 id가 있어요. 값을 바꾸고 <code>save</code>하면 UPDATE해요.</p></div></li>
+  </ol>
+  <script type="text/plain" class="src" data-lang="java" data-file="service/BookService.java">public void update(BookRequestDto dto) {
+    Book book = bookRepository.findById(dto.getId()).get();  // 1. 꺼내고
+    book.changePrice(dto.getPrice());                        // 2. 바꾸고
+    bookRepository.save(book);                               // 3. 저장 → UPDATE
+}</script>
+  <div class="warn"><b>memo의 update는 저장이 안 될 수 있어요</b><p><code>MemoService.update()</code>는 <code>changeText</code>만 하고 <code>save</code>도 <code>@Transactional</code>도 없어요. 그래서 DB에 반영되지 않아요. 둘 중 하나를 넣어야 해요. <code>@Transactional</code>을 붙이면 메서드가 끝날 때 바뀐 값을 JPA가 알아서 UPDATE해요 (변경 감지). 영속성 컨텍스트 탭에서 실제 로그로 확인할 수 있어요.</p></div>
+
+  <h2>날짜 자동 기록 (Auditing)</h2>
+  <p>demo, memo에서 쓴 기능이에요. 세 군데를 모두 챙겨야 동작해요.</p>
+  <script type="text/plain" class="src" data-lang="java">@EnableJpaAuditing @SpringBootApplication       // ① 시작 클래스에서 켜기
+public class MemoApplication { ... }
+
+@EntityListeners(value = AuditingEntityListener.class)   // ② Entity에 리스너
+@Entity
+public class Memo {
+    @CreatedDate      private LocalDateTime createdDate;  // ③ 처음 저장 시각
+    @LastModifiedDate private LocalDateTime updatedDate;  //    마지막 수정 시각
+}</script>
+</section>
+
+<!-- ============ 08 DTO ============ -->
+<section class="page" id="dto" role="tabpanel" hidden>
+  <div class="eyebrow">08 · 스프링</div>
+  <h1>DTO와 ModelMapper</h1>
+  <p class="lead">DTO(Data Transfer Object)는 화면과 주고받는 데이터 상자예요. Entity는 DB 안쪽 모양이고, DTO는 바깥에 보여 줄 모양이에요.</p>
+
+  <div class="two">
+    <div class="card"><h3><span class="chip c-ent">Entity</span></h3><p>DB 테이블과 1:1. 연관된 객체, 비밀번호 같은 내부 값도 들어 있어요. Repository가 다뤄요.</p></div>
+    <div class="card"><h3><span class="chip c-dto">DTO</span></h3><p>요청·응답에 필요한 값만. 화면이 원하는 대로 자유롭게 모양을 바꿀 수 있어요. Controller가 다뤄요.</p></div>
+  </div>
+  <p><span class="chip c-svc">Service</span>가 둘 사이를 변환해요. 들어올 땐 DTO → Entity, 나갈 땐 Entity → DTO.</p>
+
+  <h2>요청용 DTO와 응답용 DTO</h2>
+  <p>memo에서는 둘을 나눴어요. 메모를 새로 쓸 땐 text만 있으면 되니까 요청용엔 text만 있어요.</p>
+  <script type="text/plain" class="src" data-lang="java" data-file="memo/dto">@Data
+public class MemoRequestDto {   // 들어올 때: 내용만
+    private String text;
+}
+
+public class MemoDto {          // 나갈 때: 번호와 날짜까지
+    private Long id;
+    private String text;
+    private LocalDateTime createdDate;
+    private LocalDateTime updatedDate;
+}</script>
+
+  <h2>손으로 옮기기 vs ModelMapper</h2>
+  <script type="text/plain" class="src" data-lang="java">// demo: 손으로 한 칸씩
+StudentDto dto = new StudentDto();
+dto.setId(s.getId());
+dto.setName(s.getName());
+...
+
+// memo, book: ModelMapper가 이름이 같은 필드끼리 자동으로 복사
+BookRequestDto dto = mapper.map(book, BookRequestDto.class);   // Entity → DTO
+Book book = mapper.map(dto, Book.class);                       // DTO → Entity</script>
+  <div class="note"><b>규칙은 하나: 필드 이름을 같게</b><p>Book의 <code>title</code>과 DTO의 <code>title</code>처럼 이름이 같아야 복사돼요. LOOSE 설정이라 <code>userName</code>과 <code>user_name</code> 정도 차이는 맞춰 줘요.</p></div>
+  <div class="warn"><b>map에 null을 넣으면</b><p><code>mapper.map(null, ...)</code>은 "source cannot be null" 예외예요. 조회 결과가 없을 수 있으면 먼저 Optional로 확인하세요.</p></div>
+</section>
+
+<!-- ============ CRUD 1 ============ -->
+<section class="page" id="crud1" role="tabpanel" hidden>
+  <div class="eyebrow">09 · CRUD 처음부터 · 1단계</div>
+  <h1>목표 정하기와 프로젝트 설정</h1>
+  <p class="lead">book 프로젝트를 빈 폴더에서 시작해 "도서 추가·조회·수정·삭제" API가 동작할 때까지 실제로 한 순서대로 따라가요. 사이드바의 "CRUD 처음부터" 7개 탭을 순서대로 보면 돼요.</p>
+  <div class="prog" data-now="0,1"></div>
+
+  <h2>무엇을 만들까: 완성된 API</h2>
+  <p>CRUD는 Create(추가), Read(조회), Update(수정), Delete(삭제)의 앞 글자예요. 데이터를 다루는 기능은 거의 다 이 네 가지예요. 마지막에 이 표의 API가 모두 동작하게 돼요.</p>
+  <div class="tbl"><table>
+    <tr><th>CRUD</th><th>HTTP</th><th>주소</th><th>하는 일</th></tr>
+    <tr><td>Create</td><td><code>POST</code></td><td><code>/books</code></td><td>새 책 추가 → 새 id 응답</td></tr>
+    <tr><td>Read</td><td><code>GET</code></td><td><code>/books</code></td><td>전체 목록</td></tr>
+    <tr><td>Read</td><td><code>GET</code></td><td><code>/books/{id}</code></td><td>id로 한 권</td></tr>
+    <tr><td>Read</td><td><code>GET</code></td><td><code>/books/title?title=…</code></td><td>제목으로 한 권</td></tr>
+    <tr><td>Read</td><td><code>GET</code></td><td><code>/books/isbn?isbn=…</code></td><td>ISBN으로 한 권</td></tr>
+    <tr><td>Update</td><td><code>PUT</code></td><td><code>/books/{id}</code></td><td>가격 수정</td></tr>
+    <tr><td>Delete</td><td><code>DELETE</code></td><td><code>/books/{id}</code></td><td>삭제 → 204</td></tr>
+  </table></div>
+
+  <h2>만들 파일 9개와 순서</h2>
+  <p>DB에 가까운 것부터 만들어요. 위층은 아래층을 가져다 쓰기 때문에, 아래층이 먼저 있어야 위층 코드에 빨간줄이 안 생겨요.</p>
+  <div class="tbl"><table>
+    <tr><th>순서</th><th>파일</th><th>레이어</th><th>한 줄 역할</th></tr>
+    <tr><td>1</td><td><code>build.gradle</code></td><td>설정</td><td>쓸 라이브러리 목록</td></tr>
+    <tr><td>2</td><td><code>application.properties</code></td><td>설정</td><td>DB 접속 정보</td></tr>
+    <tr><td>3</td><td><code>entity/Book.java</code></td><td><span class="chip c-ent">Entity</span></td><td>book 테이블의 모양</td></tr>
+    <tr><td>4</td><td><code>repository/BookRepository.java</code></td><td><span class="chip c-repo">Repository</span></td><td>book 테이블에 넣고 빼는 도구</td></tr>
+    <tr><td>5</td><td><code>BookRepositoryTest.java</code></td><td>테스트</td><td>DB가 잘 되는지 먼저 확인</td></tr>
+    <tr><td>6</td><td><code>dto/BookRequestDto.java</code></td><td><span class="chip c-dto">DTO</span></td><td>화면과 주고받을 모양</td></tr>
+    <tr><td>7</td><td><code>config/RootConfig.java</code></td><td>설정</td><td>ModelMapper 등록</td></tr>
+    <tr><td>8</td><td><code>service/BookService.java</code></td><td><span class="chip c-svc">Service</span></td><td>CRUD 로직, Entity↔DTO 변환</td></tr>
+    <tr><td>9</td><td><code>controller/BookController.java</code></td><td><span class="chip c-ctrl">Controller</span></td><td>주소와 Service 연결</td></tr>
+  </table></div>
+
+  <h2>1-1. 프로젝트 만들기 (Spring Initializr)</h2>
+  <p>VS Code에서 <code>⌘⇧P</code> → <code>Spring Initializr: Create a Gradle Project</code>를 고르고 아래처럼 골라요.</p>
+  <div class="tbl"><table>
+    <tr><th>물어보는 것</th><th>고른 값</th><th>뜻</th></tr>
+    <tr><td>Spring Boot version</td><td>4.0.x</td><td>스프링 버전</td></tr>
+    <tr><td>Language</td><td>Java</td><td></td></tr>
+    <tr><td>Group Id</td><td><code>com.example</code></td><td>회사/조직 주소 (보통 도메인을 거꾸로)</td></tr>
+    <tr><td>Artifact Id</td><td><code>book</code></td><td>프로젝트 이름 → 패키지가 <code>com.example.book</code>이 돼요</td></tr>
+    <tr><td>Java version</td><td>21</td><td>설치된 JDK 버전</td></tr>
+    <tr><td>Dependencies</td><td>Spring Web, Spring Data JPA, Oracle Driver, Lombok, Thymeleaf, Spring Boot DevTools</td><td>아래 build.gradle에 자동으로 들어가요</td></tr>
+  </table></div>
+  <div class="note"><b>이름을 나중에 바꿨다면</b><p>세 군데를 같이 바꿔야 해요: <code>settings.gradle</code>의 <code>rootProject.name</code>, 패키지 폴더와 모든 파일의 <code>package</code> 줄, <code>application.properties</code>의 <code>spring.application.name</code>.</p></div>
+
+  <h2>1-2. build.gradle: 라이브러리 목록</h2>
+  <script type="text/plain" class="src" data-lang="plaintext" data-file="book/build.gradle" data-ln>plugins {
+	id 'java'
+	id 'org.springframework.boot' version '4.0.8'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1'
+	implementation 'org.modelmapper:modelmapper:3.2.7'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+	compileOnly 'org.projectlombok:lombok'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	runtimeOnly 'com.oracle.database.jdbc:ojdbc17'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-thymeleaf-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+	testCompileOnly 'org.projectlombok:lombok'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}</script>
+  <div class="explain">
+    <div><code>plugins { ... }</code><p>이 프로젝트가 자바 + 스프링 부트 프로젝트라고 Gradle에게 알려 줘요.</p></div>
+    <div><code>languageVersion = ...of(21)</code><p>자바 21로 컴파일해요.</p></div>
+    <div><code>mavenCentral()</code><p>라이브러리를 내려받을 저장소. npm의 npmjs.com 같은 곳이에요.</p></div>
+    <div><code>springdoc-openapi...</code><p>Swagger 화면. Initializr에 없어서 직접 추가했어요.</p></div>
+    <div><code>modelmapper</code><p>Entity ↔ DTO 자동 변환. 이것도 직접 추가.</p></div>
+    <div><code>starter-data-jpa</code><p>JPA, Hibernate, Repository 기능.</p></div>
+    <div><code>starter-webmvc</code><p>Controller와 내장 웹 서버(톰캣). 8080 포트를 여는 게 이것.</p></div>
+    <div><code>compileOnly / annotationProcessor lombok</code><p>Lombok은 컴파일할 때 getter 등을 코드로 만들어 넣고 사라져요. 그래서 실행할 땐 필요 없어요.</p></div>
+    <div><code>runtimeOnly ojdbc17</code><p>Oracle과 대화하는 드라이버. 코드에서 직접 안 쓰고 실행할 때만 필요해요.</p></div>
+    <div><code>developmentOnly devtools</code><p>코드를 저장하면 서버가 자동 재시작돼요.</p></div>
+    <div><code>test...</code><p>테스트(JUnit)에서만 쓰는 것들.</p></div>
+  </div>
+  <p>추가하거나 고친 뒤에는 <code>⌘⇧P</code> → <code>Java: Reload Projects</code>를 해야 VS Code가 새 라이브러리를 알아봐요.</p>
+
+  <h2>1-3. application.properties: DB 연결</h2>
+  <script type="text/plain" class="src" data-lang="properties" data-file="src/main/resources/application.properties" data-ln>spring.application.name=book
+
+spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
+spring.datasource.url = jdbc:oracle:thin:@localhost:1521/FREEPDB1
+spring.datasource.username=java_user
+spring.datasource.password=12345
+
+spring.jpa.hibernate.ddl-auto = update
+
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.highlight_sql=true
+
+logging.level.org.hibernate.SQL=debug
+logging.level.org.hibernate.orm.jdbc.bind=trace</script>
+  <div class="explain">
+    <div><code>driver-class-name</code><p>Oracle 드라이버를 쓰겠다.</p></div>
+    <div><code>url</code><p>DB 주소. <code>localhost:1521</code>은 내 맥의 1521 포트(OrbStack의 oracle-db 컨테이너), <code>FREEPDB1</code>은 DB 이름.</p></div>
+    <div><code>username / password</code><p>DB 계정.</p></div>
+    <div><code>ddl-auto = update</code><p>서버가 켜질 때 Entity를 보고 테이블이 없으면 만들고, 컬럼이 늘었으면 추가해요. 테이블을 직접 만들 필요가 없어요.</p></div>
+    <div><code>format_sql / highlight_sql</code><p>콘솔에 찍히는 SQL을 보기 좋게 줄바꿈하고 색칠.</p></div>
+    <div><code>logging...SQL=debug</code><p>JPA가 실행한 SQL을 콘솔에 보여 줘요. 공부할 때 아주 중요해요.</p></div>
+    <div><code>jdbc.bind=trace</code><p>SQL의 <code>?</code> 자리에 실제로 들어간 값까지 보여 줘요.</p></div>
+  </div>
+
+  <h2>1-4. BookApplication.java: 시작점</h2>
+  <script type="text/plain" class="src" data-lang="java" data-file="src/main/java/com/example/book/BookApplication.java" data-ln>package com.example.book;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class BookApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(BookApplication.class, args);
+	}
+
+}</script>
+  <div class="explain">
+    <div><code>package com.example.book;</code><p>이 파일의 주소. 앞으로 만들 모든 파일은 이 아래(<code>com.example.book.xxx</code>)에 있어야 해요.</p></div>
+    <div><code>@SpringBootApplication</code><p>여기서부터 아래 패키지를 훑어서 Bean을 만들고, 자동 설정을 켜요.</p></div>
+    <div><code>public static void main</code><p>자바 프로그램의 시작 메서드. 자바는 항상 main부터 실행해요.</p></div>
+    <div><code>SpringApplication.run(...)</code><p>스프링을 띄우는 한 줄. DB 연결, 웹 서버 시작이 여기서 다 일어나요.</p></div>
+  </div>
+  <p>자동으로 만들어진 파일이라 손댈 일은 거의 없어요.</p>
+
+  <div class="check"><b>여기까지 확인</b>
+    <p>OrbStack에서 <code>oracle-db</code>가 켜져 있는지 보고 <code>./gradlew bootRun</code>. 콘솔에 <code>Started BookApplication</code>이 뜨면 성공이에요. 아직 Controller가 없어서 <code>localhost:8080/books</code>는 404예요.</p></div>
+</section>
+
+<!-- ============ CRUD 2 ============ -->
+<section class="page" id="crud2" role="tabpanel" hidden>
+  <div class="eyebrow">10 · CRUD 처음부터 · 2단계</div>
+  <h1>Entity와 Repository</h1>
+  <p class="lead">DB에 무엇을 저장할지(Entity)와, 어떻게 넣고 꺼낼지(Repository)를 정해요. 이 두 파일만 있으면 DB 작업이 가능해요.</p>
+  <div class="prog" data-now="2,3"></div>
+
+  <h2>2-1. Book.java: 테이블 설계도</h2>
+  <p><code>src/main/java/com/example/book/entity/</code> 폴더를 만들고 그 안에 만들어요.</p>
+  <script type="text/plain" class="src" data-lang="java" data-file="entity/Book.java" data-ln>package com.example.book.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+@Builder
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@Entity
+public class Book {
+
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    private Long id;
+
+    @Column(nullable = false, unique = true)
+    private String isbn;
+
+    @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false)
+    private int price;
+
+    @Column(nullable = false)
+    private String author;
+
+    public void changePrice(int price) {
+        this.price = price;
+    }
+}</script>
+  <div class="explain">
+    <div><code>import jakarta.persistence.*</code><p>JPA 어노테이션들. <code>jakarta</code>로 시작하는 걸 골라야 해요.</p></div>
+    <div><code>import lombok.*</code><p>코드를 대신 만들어 주는 Lombok 어노테이션들.</p></div>
+    <div><code>@Entity</code><p>"이 클래스는 DB 테이블이다." 클래스 이름 Book → 테이블 이름 <code>book</code>.</p></div>
+    <div><code>@Getter @Setter</code><p>모든 필드의 <code>getTitle()</code>, <code>setTitle()</code> 등을 만들어 줘요. ModelMapper와 JSON 변환이 getter를 써요.</p></div>
+    <div><code>@NoArgsConstructor</code><p>빈 생성자 <code>new Book()</code>. JPA가 DB에서 읽은 값을 담을 때 이걸로 먼저 만들어요. <strong>없으면 에러.</strong></p></div>
+    <div><code>@AllArgsConstructor</code><p>모든 필드를 받는 생성자. 바로 아래 @Builder가 내부에서 써요.</p></div>
+    <div><code>@Builder</code><p><code>Book.builder().title("…").price(36000).build()</code>처럼 원하는 필드만 이름 붙여 채워서 만들 수 있게 해요.</p></div>
+    <div><code>@ToString</code><p><code>System.out.println(book)</code> 하면 <code>Book(id=14, isbn=…)</code>처럼 보이게.</p></div>
+    <div><code>@Id</code><p>이 필드가 기본키(PK). 한 줄을 구분하는 번호.</p></div>
+    <div><code>@GeneratedValue(IDENTITY)</code><p>번호는 DB가 1, 2, 3… 자동으로 매겨요. 그래서 저장 전엔 id가 null.</p></div>
+    <div><code>private Long id;</code><p>null이 될 수 있어야 해서 <code>long</code>이 아닌 <code>Long</code>.</p></div>
+    <div><code>@Column(nullable = false, unique = true)</code><p>isbn은 비어 있으면 안 되고(NOT NULL), 같은 값이 두 번 들어갈 수 없어요(UNIQUE).</p></div>
+    <div><code>private int price;</code><p>가격은 항상 있으니 기본 타입 <code>int</code>.</p></div>
+    <div><code>changePrice(int price)</code><p>가격을 바꾸는 전용 메서드. 수정(Update) 때 Service가 이걸 불러요.</p></div>
+  </div>
+
+  <h3>서버를 켜면 만들어지는 테이블</h3>
+  <p><code>ddl-auto=update</code> 덕분에 콘솔에 대략 이런 SQL이 찍히고 테이블이 생겨요.</p>
+  <script type="text/plain" class="src" data-lang="sql" data-file="콘솔 로그 (Hibernate)">create table book (
+    id number(19,0) generated by default as identity,
+    author varchar2(255 char) not null,
+    isbn varchar2(255 char) not null unique,
+    price number(10,0) not null,
+    title varchar2(255 char) not null,
+    primary key (id)
+)</script>
+  <div class="tbl"><table>
+    <tr><th>자바 필드</th><th>DB 컬럼</th><th>규칙</th></tr>
+    <tr><td><code>Long id</code></td><td><code>id NUMBER</code></td><td>PK, 자동 증가</td></tr>
+    <tr><td><code>String isbn</code></td><td><code>isbn VARCHAR2</code></td><td>NOT NULL, UNIQUE</td></tr>
+    <tr><td><code>String title</code></td><td><code>title VARCHAR2</code></td><td>NOT NULL</td></tr>
+    <tr><td><code>int price</code></td><td><code>price NUMBER</code></td><td>NOT NULL</td></tr>
+    <tr><td><code>String author</code></td><td><code>author VARCHAR2</code></td><td>NOT NULL</td></tr>
+  </table></div>
+
+  <h2>2-2. BookRepository.java: DB 도구</h2>
+  <p><code>repository/</code> 폴더에 만들어요. class가 아니라 <strong>interface</strong>예요.</p>
+  <script type="text/plain" class="src" data-lang="java" data-file="repository/BookRepository.java" data-ln>package com.example.book.repository;
+
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.example.book.entity.Book;
+
+public interface BookRepository extends JpaRepository<Book, Long> {
+
+    Book findByIsbn(String isbn);
+
+    Optional<Book> findByTitle(String title);
+}</script>
+  <div class="explain">
+    <div><code>interface</code><p>메서드 이름만 적고 몸통은 없어요. 서버가 켜질 때 스프링이 몸통(SQL 실행 코드)을 자동으로 만들어서 Bean으로 등록해요.</p></div>
+    <div><code>extends JpaRepository&lt;Book, Long&gt;</code><p>"Book을 다루고, Book의 id 타입은 Long이야." 이것만으로 save, findAll, findById, deleteById를 물려받아요.</p></div>
+    <div><code>Book findByIsbn(String isbn)</code><p>이름 규칙 <code>findBy + 필드명</code>으로 <code>where isbn = ?</code>를 만들어 줘요. 결과가 없으면 null.</p></div>
+    <div><code>Optional&lt;Book&gt; findByTitle(...)</code><p>같은 방식인데 Optional 상자에 담아 줘요. 없으면 빈 상자라 null 실수를 막을 수 있어요.</p></div>
+  </div>
+  <div class="tbl"><table>
+    <tr><th>물려받은 메서드</th><th>돌려주는 것</th><th>만들어지는 SQL</th><th>CRUD</th></tr>
+    <tr><td><code>save(book)</code></td><td>저장된 Book (id 채워짐)</td><td>INSERT 또는 UPDATE</td><td>C, U</td></tr>
+    <tr><td><code>findAll()</code></td><td><code>List&lt;Book&gt;</code></td><td><code>select * from book</code></td><td>R</td></tr>
+    <tr><td><code>findById(id)</code></td><td><code>Optional&lt;Book&gt;</code></td><td><code>select … where id=?</code></td><td>R</td></tr>
+    <tr><td><code>deleteById(id)</code></td><td>없음 (void)</td><td><code>delete from book where id=?</code></td><td>D</td></tr>
+  </table></div>
+  <div class="check"><b>여기까지 확인</b><p>서버를 다시 켜서 콘솔에 <code>create table book</code>이 찍히는지 봐요 (이미 테이블이 있으면 안 찍혀요). 이제 DB를 쓸 준비가 끝났어요. 하지만 Controller가 없으니 브라우저로는 아직 못 써요. 그래서 다음 단계에서 테스트로 확인해요.</p></div>
+</section>
+
+<!-- ============ CRUD 3 ============ -->
+<section class="page" id="crud3" role="tabpanel" hidden>
+  <div class="eyebrow">11 · CRUD 처음부터 · 3단계</div>
+  <h1>테스트로 DB 먼저 확인하기</h1>
+  <p class="lead">Controller, Service까지 다 만든 뒤에 에러가 나면 어느 층이 문제인지 찾기 어려워요. 그래서 Repository만 있는 지금 CRUD가 되는지 먼저 확인해요.</p>
+  <div class="prog" data-now="4"></div>
+
+  <h2>3-1. BookRepositoryTest.java</h2>
+  <p>위치: <code>src/test/java/com/example/book/</code> (main과 같은 패키지 이름). 실제 파일 그대로예요.</p>
+  <script type="text/plain" class="src" data-lang="java" data-file="src/test/java/com/example/book/BookRepositoryTest.java" data-ln>package com.example.book;
+
+import java.util.List;
+import java.util.stream.IntStream;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import com.example.book.entity.Book;
+import com.example.book.repository.BookRepository;
+
+@SpringBootTest
+public class BookRepositoryTest {
+
+    @Autowired
+    private BookRepository bookRepository;
+
+    @Test
+    public void insert() {
+        IntStream.rangeClosed(1, 11).forEach((i) -> {
+            Book book = Book.builder().isbn("A101010" + i).title("파워 자바" + i).author("홍길동" + i).price(36000).build();
+            bookRepository.save(book);
+        });
+    }
+
+    @Test
+    public void read() {
+        List<Book> books = bookRepository.findAll();
+        System.out.println(books);
+    };
+
+    @Test
+    public void read1() {
+        Book book = bookRepository.findById(1L).get();
+        System.out.println(book);
+
+        book = bookRepository.findByIsbn("A1010101");
+        System.out.println(book);
+    };
+
+    @Test
+    public void update() {
+        Book book = bookRepository.findById(1L).get();
+        book.changePrice(42000);
+        bookRepository.save(book);
+    };
+
+    @Test
+    public void delete() {
+        bookRepository.deleteById(10L);
+    };
+}</script>
+
+  <h3>준비 부분</h3>
+  <div class="explain">
+    <div><code>@SpringBootTest</code><p>테스트할 때 스프링 전체를 띄워요. 그래야 BookRepository Bean을 쓸 수 있어요.</p></div>
+    <div><code>@Autowired private BookRepository</code><p>스프링이 만들어 둔 Repository를 이 필드에 넣어 줘요. 테스트 클래스는 생성자 주입 대신 이 방식을 써요.</p></div>
+    <div><code>@Test</code><p>메서드 하나가 테스트 하나. VS Code에서 메서드 옆에 ▶ 버튼이 생겨요.</p></div>
+  </div>
+
+  <h3>C · insert()</h3>
+  <div class="explain">
+    <div><code>IntStream.rangeClosed(1, 11)</code><p>1부터 11까지 숫자를 하나씩 만들어요 (11 포함).</p></div>
+    <div><code>.forEach((i) -> { ... })</code><p>숫자 하나마다 중괄호 안을 실행. i는 1, 2, … 11.</p></div>
+    <div><code>Book.builder()...build()</code><p>id 없이 Book을 만들어요. <code>"A101010" + i</code>는 글자 이어 붙이기 → <code>"A1010101"</code>.</p></div>
+    <div><code>bookRepository.save(book)</code><p>id가 null이니까 INSERT. 11번 반복해서 11권이 들어가요.</p></div>
+  </div>
+  <script type="text/plain" class="src" data-lang="sql" data-file="콘솔 (한 권마다)">insert into book (author, isbn, price, title, id) values (?, ?, ?, ?, default)
+binding parameter (1:VARCHAR) <- [홍길동1]
+binding parameter (2:VARCHAR) <- [A1010101]
+...</script>
+
+  <h3>R · read(), read1()</h3>
+  <div class="explain">
+    <div><code>bookRepository.findAll()</code><p>전체를 <code>List&lt;Book&gt;</code>로. println하면 @ToString 덕분에 내용이 보여요.</p></div>
+    <div><code>findById(1L).get()</code><p>id 1번을 꺼내요. <code>1L</code>은 Long 타입 1. Optional이라 <code>.get()</code>으로 꺼내는데, 1번이 없으면 NoSuchElementException.</p></div>
+    <div><code>findByIsbn("A1010101")</code><p>직접 만든 쿼리 메서드. 결과가 없으면 null이 찍혀요.</p></div>
+  </div>
+
+  <h3>U · update()</h3>
+  <div class="explain">
+    <div><code>findById(1L).get()</code><p>먼저 수정할 대상을 DB에서 꺼내요. 꺼낸 Book은 id가 있어요.</p></div>
+    <div><code>book.changePrice(42000)</code><p>자바 객체의 값만 바뀐 상태. 아직 DB는 그대로.</p></div>
+    <div><code>bookRepository.save(book)</code><p>id가 있으니 UPDATE. 이제 DB도 42000.</p></div>
+  </div>
+
+  <h3>D · delete()</h3>
+  <div class="explain">
+    <div><code>deleteById(10L)</code><p>10번을 지워요. 내부적으로는 먼저 조회한 뒤 DELETE 해요.</p></div>
+  </div>
+
+  <h2>3-2. 실행하고 확인</h2>
+  <ol class="steps">
+    <li><div><p>메서드 옆 ▶ 를 눌러요. 한 번에 하나씩 누르는 게 안전해요 (클래스 전체 실행은 순서가 보장되지 않아요).</p></div></li>
+    <li><div><p>아래 DEBUG CONSOLE이나 터미널에 SQL과 println 결과가 찍혀요. 초록 체크면 성공.</p></div></li>
+    <li><div><p>DB 툴에서 <code>select * from book;</code>으로 실제로 들어갔는지 봐요.</p></div></li>
+  </ol>
+  <div class="warn"><b>id는 1부터가 아닐 수 있어요</b><p>지금 DB의 책은 id 14~24예요. 예전에 지웠던 번호는 다시 안 쓰기 때문이에요. 그래서 <code>findById(1L)</code>은 NoSuchElementException이 나요. 테스트의 숫자를 DB에 실제 있는 id로 바꿔서 실행하세요.</p></div>
+  <div class="warn"><b>insert를 두 번 누르면</b><p>isbn이 UNIQUE라서 두 번째엔 <code>ORA-00001: unique constraint violated</code> 에러가 나요. 테스트는 진짜 DB를 바꿔요.</p></div>
+  <div class="note"><b>@Transactional이 붙은 테스트는 롤백돼요</b><p>테스트 클래스나 메서드에 <code>@Transactional</code>이 있으면 끝날 때 스프링이 자동으로 되돌려요. 그래서 insert가 성공해도 DB엔 안 남아요. 대신 LAZY 연관 객체를 꺼내 볼 수 있어요. 자세한 건 영속성 컨텍스트 탭.</p></div>
+  <div class="check"><b>여기까지 확인</b><p>insert → read → update → delete가 다 초록이면 Repository와 DB는 문제없어요. 이후에 에러가 나면 위층(Service, Controller)만 의심하면 돼요.</p></div>
+</section>
+
+<!-- ============ CRUD 4 ============ -->
+<section class="page" id="crud4" role="tabpanel" hidden>
+  <div class="eyebrow">12 · CRUD 처음부터 · 4단계</div>
+  <h1>DTO와 ModelMapper 준비</h1>
+  <p class="lead">화면과 주고받을 상자(DTO)를 만들고, Entity와 DTO를 자동으로 바꿔 주는 도구(ModelMapper)를 등록해요. Service가 둘 다 쓰기 때문에 Service보다 먼저 만들어요.</p>
+  <div class="prog" data-now="5,6"></div>
+
+  <h2>4-1. BookRequestDto.java</h2>
+  <p><code>dto/</code> 폴더에 만들어요.</p>
+  <script type="text/plain" class="src" data-lang="java" data-file="dto/BookRequestDto.java" data-ln>package com.example.book.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
+@Setter
+@Getter
+@Data
+public class BookRequestDto {
+    private Long id;
+    private String isbn;
+    private String title;
+    private int price;
+    private String author;
+}</script>
+  <div class="explain">
+    <div><code>필드 5개</code><p>Book Entity와 <strong>이름이 똑같아요</strong>. ModelMapper는 이름이 같은 필드끼리 값을 복사하니까 이게 중요해요.</p></div>
+    <div><code>@Data</code><p>@Getter, @Setter, @ToString 등을 한 번에. 그래서 위의 @Getter, @Setter, @ToString은 사실 중복이에요 (에러는 아니에요).</p></div>
+    <div><code>@NoArgsConstructor</code><p>JSON → DTO로 바꿀 때 빈 객체를 먼저 만들고 setter로 채워요. 그래서 필요해요.</p></div>
+    <div><code>@Setter</code><p>Controller에서 <code>dto.setId(id)</code>를 쓰고, JSON 변환도 setter를 써요.</p></div>
+  </div>
+  <div class="note"><b>Entity랑 똑같은데 왜 따로 만들까?</b>
+    <p>지금은 모양이 같지만 역할이 달라요. Entity는 DB 모양이라 바뀌면 테이블이 바뀌어요. DTO는 화면이 원하는 모양이라 자유롭게 바꿔도 돼요. 예를 들어 나중에 Book에 "내부 메모" 컬럼이 생겨도 DTO에 안 넣으면 화면엔 안 나가요. memo 프로젝트처럼 요청용(<code>MemoRequestDto</code>: text만)과 응답용(<code>MemoDto</code>: id, 날짜까지)을 나누기도 해요.</p></div>
+
+  <h2>4-2. RootConfig.java: ModelMapper 등록</h2>
+  <p><code>config/</code> 폴더에 만들어요. memo에서 복사해 왔다면 첫 줄 package를 꼭 book으로 바꾸세요.</p>
+  <script type="text/plain" class="src" data-lang="java" data-file="config/RootConfig.java" data-ln>package com.example.book.config;
+
+import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration // 스프링 설정 파일
+public class RootConfig {
+
+    @Bean
+    ModelMapper getMapper() {
+        ModelMapper modelMapper = new ModelMapper();
+
+        modelMapper.getConfiguration().setFieldMatchingEnabled(true)
+                .setFieldAccessLevel(org.modelmapper.config.Configuration.AccessLevel.PRIVATE)
+                .setMatchingStrategy(MatchingStrategies.LOOSE); // userName, user_name
+
+        return modelMapper;
+    }
+}</script>
+  <div class="explain">
+    <div><code>@Configuration</code><p>"설정 클래스예요." 서버가 켜질 때 안의 @Bean 메서드를 실행해요.</p></div>
+    <div><code>@Bean ModelMapper getMapper()</code><p>이 메서드가 돌려주는 ModelMapper 객체를 Bean으로 보관해요. 그러면 Service에서 <code>private final ModelMapper mapper;</code>만 써도 주입돼요.</p></div>
+    <div><code>new ModelMapper()</code><p>ModelMapper는 라이브러리 클래스라 @Service를 붙일 수 없어서, 여기서 직접 new 해요.</p></div>
+    <div><code>setFieldMatchingEnabled(true)</code><p>getter/setter가 아니라 필드끼리 직접 비교해서 복사.</p></div>
+    <div><code>AccessLevel.PRIVATE</code><p>private 필드도 접근 허용.</p></div>
+    <div><code>MatchingStrategies.LOOSE</code><p>이름이 조금 달라도(<code>userName</code> / <code>user_name</code>) 맞춰 줘요.</p></div>
+  </div>
+
+  <h2>ModelMapper가 하는 일 한눈에</h2>
+  <div class="tbl"><table>
+    <tr><th><span class="chip c-ent">Book</span> (Entity)</th><th></th><th><span class="chip c-dto">BookRequestDto</span></th></tr>
+    <tr><td><code>id = 14</code></td><td>→</td><td><code>id = 14</code></td></tr>
+    <tr><td><code>isbn = "A1010101"</code></td><td>→</td><td><code>isbn = "A1010101"</code></td></tr>
+    <tr><td><code>title = "파워 자바1"</code></td><td>→</td><td><code>title = "파워 자바1"</code></td></tr>
+    <tr><td><code>price = 36000</code></td><td>→</td><td><code>price = 36000</code></td></tr>
+    <tr><td><code>author = "홍길동1"</code></td><td>→</td><td><code>author = "홍길동1"</code></td></tr>
+  </table></div>
+  <script type="text/plain" class="src" data-lang="java">BookRequestDto dto = mapper.map(book, BookRequestDto.class);  // Entity → DTO (나갈 때)
+Book book = mapper.map(dto, Book.class);                       // DTO → Entity (들어올 때)
+// 두 번째 인자 "XXX.class" = "이 클래스 모양으로 새로 만들어서 채워 줘"</script>
+  <div class="check"><b>여기까지 확인</b><p><code>./gradlew compileJava</code>가 조용히 끝나면 OK. 서버가 켜질 때 "No qualifying bean of type ModelMapper"가 나면 RootConfig의 package 줄을 확인하세요.</p></div>
+</section>
+
+<!-- ============ CRUD 5 ============ -->
+<section class="page" id="crud5" role="tabpanel" hidden>
+  <div class="eyebrow">13 · CRUD 처음부터 · 5단계</div>
+  <h1>Service: CRUD 로직 만들기</h1>
+  <p class="lead">Service는 Repository(DB 도구)와 ModelMapper(변환 도구)를 받아서 실제 CRUD를 해요. 모든 메서드가 같은 패턴이에요: <strong>DTO 받기 → Entity로 DB 작업 → DTO로 돌려주기</strong>.</p>
+  <div class="prog" data-now="7"></div>
+
+  <script type="text/plain" class="src" data-lang="java" data-file="service/BookService.java" data-ln>package com.example.book.service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Service;
+
+import com.example.book.dto.BookRequestDto;
+import com.example.book.entity.Book;
+import com.example.book.repository.BookRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+@Service
+public class BookService {
+    private final BookRepository bookRepository;
+    private final ModelMapper mapper;
+
+    // C
+    public Long create(BookRequestDto dto) {
+        return bookRepository.save(mapper.map(dto, Book.class)).getId();
+    }
+
+    // R : 전체
+    public List<BookRequestDto> readAll() {
+        List<Book> books = bookRepository.findAll();
+        return books.stream().map(book -> mapper.map(book, BookRequestDto.class)).collect(Collectors.toList());
+    }
+
+    // R : 제목
+    public BookRequestDto readTitle(String title) {
+        Book book = bookRepository.findByTitle(title).orElseThrow();
+        return mapper.map(book, BookRequestDto.class);
+    }
+
+    // R : isbn
+    public BookRequestDto readIsbn(String isbn) {
+        Book book = bookRepository.findByIsbn(isbn);
+        return mapper.map(book, BookRequestDto.class);
+    }
+
+    // R : id
+    public BookRequestDto readId(Long id) {
+        Book book = bookRepository.findById(id).orElseThrow();
+        return mapper.map(book, BookRequestDto.class);
+    }
+
+    // U
+    public void update(BookRequestDto dto) {
+        Book book = bookRepository.findById(dto.getId()).get();
+        book.changePrice(dto.getPrice());
+        bookRepository.save(book);
+    }
+
+    // D
+    public void delete(Long id) {
+        bookRepository.deleteById(id);
+    }
+}</script>
+  <p class="cap">실제 파일에서 사용하지 않는 import와 주석 일부를 빼고 보여 줘요. 코드 내용은 같아요.</p>
+
+  <h2>준비 부분</h2>
+  <div class="explain">
+    <div><code>@Service</code><p>Bean으로 등록. Controller가 이걸 주입받아 써요.</p></div>
+    <div><code>@RequiredArgsConstructor</code><p>final 필드 두 개를 받는 생성자를 Lombok이 만들어요.</p></div>
+    <div><code>private final BookRepository bookRepository;</code><p>2단계에서 만든 DB 도구가 여기로 들어와요.</p></div>
+    <div><code>private final ModelMapper mapper;</code><p>4단계 RootConfig에서 등록한 변환 도구가 들어와요.</p></div>
+  </div>
+
+  <h2>C · create(dto)</h2>
+  <p>한 줄에 세 가지 일이 겹쳐 있어서, 풀어 쓰면 이래요.</p>
+  <script type="text/plain" class="src" data-lang="java">Book book = mapper.map(dto, Book.class);   // ① DTO → Entity (id는 null)
+Book saved = bookRepository.save(book);    // ② INSERT, DB가 매긴 id가 채워진 Book이 돌아옴
+return saved.getId();                      // ③ 새 id만 돌려줌 (예: 25)</script>
+  <div class="tbl"><table><tr><th>받는 것</th><th>하는 일</th><th>돌려주는 것</th></tr>
+    <tr><td><code>BookRequestDto</code> (isbn, title, price, author)</td><td>INSERT</td><td><code>Long</code> 새 id</td></tr></table></div>
+
+  <h2>R · readAll()</h2>
+  <div class="explain">
+    <div><code>bookRepository.findAll()</code><p>Book 11권이 담긴 <code>List&lt;Book&gt;</code>.</p></div>
+    <div><code>books.stream()</code><p>리스트를 한 권씩 흘려보내는 상태로.</p></div>
+    <div><code>.map(book -> mapper.map(book, BookRequestDto.class))</code><p>흘러가는 Book 하나하나를 DTO로 바꿔요.</p></div>
+    <div><code>.collect(Collectors.toList())</code><p>바뀐 DTO들을 다시 List로 모아요 → <code>List&lt;BookRequestDto&gt;</code>.</p></div>
+  </div>
+  <p>for문으로 쓰면 이것과 같아요:</p>
+  <script type="text/plain" class="src" data-lang="java">List<BookRequestDto> list = new ArrayList<>();
+for (Book book : books) {
+    list.add(mapper.map(book, BookRequestDto.class));
+}
+return list;</script>
+
+  <h2>R · readId(id), readTitle(title), readIsbn(isbn)</h2>
+  <p>셋 다 "하나 찾기 → DTO로 바꾸기" 두 줄이에요. 차이는 찾는 방법과, 없을 때 어떻게 되는지예요.</p>
+  <div class="tbl"><table>
+    <tr><th>메서드</th><th>찾는 코드</th><th>없으면</th></tr>
+    <tr><td><code>readId</code></td><td><code>findById(id).orElseThrow()</code></td><td>NoSuchElementException → 500</td></tr>
+    <tr><td><code>readTitle</code></td><td><code>findByTitle(title).orElseThrow()</code></td><td>NoSuchElementException → 500</td></tr>
+    <tr><td><code>readIsbn</code></td><td><code>findByIsbn(isbn)</code></td><td>book이 null → <code>mapper.map(null)</code>에서 "source cannot be null" → 500</td></tr>
+  </table></div>
+  <div class="warn"><b>실제로 했던 실수</b><p><code>readTitle</code> 안에서 <code>findByIsbn(title)</code>을 부르고 있어서, 제목을 isbn 칸에서 찾으니 항상 null → "source cannot be null"이 났었어요. 메서드 이름과 안에서 부르는 Repository 메서드가 맞는지 꼭 확인하세요.</p></div>
+
+  <h2>U · update(dto)</h2>
+  <div class="explain">
+    <div><code>findById(dto.getId()).get()</code><p>① DB에서 기존 책을 꺼내요. dto의 id는 Controller가 주소에서 넣어 줬어요.</p></div>
+    <div><code>book.changePrice(dto.getPrice())</code><p>② 꺼낸 Entity의 가격만 바꿔요. title, isbn 등은 DB 값 그대로.</p></div>
+    <div><code>bookRepository.save(book)</code><p>③ id가 있으니 UPDATE.</p></div>
+  </div>
+  <div class="note"><b>DTO를 그대로 Entity로 바꿔 저장하면 안 되나요?</b><p><code>save(mapper.map(dto, Book.class))</code>로 하면 dto에 없는 값(title 등)이 null인 Book이 저장돼서, NOT NULL 에러가 나거나 기존 값이 지워져요. 그래서 "꺼내고 → 바꾸고 → 저장" 순서를 지켜요.</p></div>
+
+  <h2>D · delete(id)</h2>
+  <div class="explain">
+    <div><code>bookRepository.deleteById(id)</code><p>그 id를 지워요. 돌려줄 게 없어서 반환 타입이 <code>void</code>.</p></div>
+  </div>
+
+  <h2>메서드 모양 정리</h2>
+  <div class="tbl"><table>
+    <tr><th>메서드</th><th>받는 것</th><th>Repository 호출</th><th>돌려주는 것</th></tr>
+    <tr><td><code>create</code></td><td>DTO</td><td><code>save</code></td><td><code>Long</code> id</td></tr>
+    <tr><td><code>readAll</code></td><td>—</td><td><code>findAll</code></td><td><code>List&lt;DTO&gt;</code></td></tr>
+    <tr><td><code>readId</code></td><td><code>Long</code></td><td><code>findById</code></td><td>DTO</td></tr>
+    <tr><td><code>readTitle</code></td><td><code>String</code></td><td><code>findByTitle</code></td><td>DTO</td></tr>
+    <tr><td><code>readIsbn</code></td><td><code>String</code></td><td><code>findByIsbn</code></td><td>DTO</td></tr>
+    <tr><td><code>update</code></td><td>DTO (id 포함)</td><td><code>findById</code> + <code>save</code></td><td><code>void</code></td></tr>
+    <tr><td><code>delete</code></td><td><code>Long</code></td><td><code>deleteById</code></td><td><code>void</code></td></tr>
+  </table></div>
+</section>
+
+<!-- ============ CRUD 6 ============ -->
+<section class="page" id="crud6" role="tabpanel" hidden>
+  <div class="eyebrow">14 · CRUD 처음부터 · 6단계</div>
+  <h1>Controller와 Swagger로 확인</h1>
+  <p class="lead">마지막 층이에요. 주소(URL)마다 Service 메서드를 하나씩 연결하면, 이제 브라우저·Swagger·React에서 부를 수 있어요.</p>
+  <div class="prog" data-now="8"></div>
+
+  <script type="text/plain" class="src" data-lang="java" data-file="controller/BookController.java" data-ln>package com.example.book.controller;
+
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.book.dto.BookRequestDto;
+import com.example.book.service.BookService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import lombok.RequiredArgsConstructor;
+
+@RequestMapping("/books")
+@RequiredArgsConstructor
+@RestController
+public class BookController {
+
+    private final BookService service;
+
+    @GetMapping("")
+    @Operation(summary = "도서 목록 조회", description = "전체 도서 목록을 조회합니다.")
+    public List<BookRequestDto> getMemos() {
+        return service.readAll();
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "도서 조회", description = "특정 도서를 id 기준으로 조회합니다.")
+    public BookRequestDto getBookById(@PathVariable Long id) {
+        return service.readId(id);
+    }
+
+    @GetMapping("/title")
+    public BookRequestDto getBookByTitle(String title) {
+        return service.readTitle(title);
+    }
+
+    @GetMapping("/isbn")
+    public BookRequestDto getBookByIsbn(String isbn) {
+        return service.readIsbn(isbn);
+    }
+
+    @PostMapping("")
+    @Operation(summary = "도서 삽입", description = "특정 도서 삽입합니다.")
+    public Long postBook(@RequestBody BookRequestDto dto) {
+        return service.create(dto);
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "도서 수정", description = "특정 도서를 삽입 수정합니다.")
+    public Long putBook(@PathVariable Long id, @RequestBody BookRequestDto dto) {
+        dto.setId(id);
+        service.update(dto);
+        return id;
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "도서 삭제", description = "특정 도서 삭제합니다.")
+    public ResponseEntity<Void> deleteMemo(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+}</script>
+  <p class="cap">실제 파일에서 쓰지 않는 import(<code>Controller</code>, <code>Service</code>)와 title/isbn의 @Operation 줄을 빼고 보여 줘요. 메서드 이름 <code>getMemos</code>, <code>deleteMemo</code>는 memo에서 복사해 온 흔적인데, 동작에는 상관없어요 (주소는 어노테이션이 정해요).</p>
+
+  <h2>클래스 위 어노테이션</h2>
+  <div class="explain">
+    <div><code>@RestController</code><p>메서드가 return한 객체를 JSON으로 바꿔 응답해요. React 같은 프론트가 데이터만 받아 가는 방식.</p></div>
+    <div><code>@RequestMapping("/books")</code><p>이 클래스 모든 주소 앞에 <code>/books</code>가 붙어요. <code>@GetMapping("/{id}")</code> → 실제 주소 <code>/books/{id}</code>.</p></div>
+    <div><span class="k"><code>@RequiredArgsConstructor</code><code>private final BookService service;</code></span><p>5단계 Service가 주입돼요.</p></div>
+  </div>
+
+  <h2>메서드 하나씩</h2>
+  <div class="explain">
+    <div><span class="k"><code>@GetMapping("")</code><br><code>getMemos()</code></span><p><code>GET /books</code>. 받을 게 없어서 파라미터 없음. <code>List&lt;BookRequestDto&gt;</code>를 return하면 JSON 배열 <code>[{...}, {...}]</code>로 나가요.</p></div>
+    <div><span class="k"><code>@GetMapping("/{id}")</code><br><code>@PathVariable Long id</code></span><p><code>GET /books/14</code>. 주소의 <code>{id}</code> 자리에 있는 14를 꺼내 Long으로 바꿔 줘요. 이름(id)이 같아야 해요.</p></div>
+    <div><span class="k"><code>@GetMapping("/title")</code><br><code>String title</code></span><p><code>GET /books/title?title=파워 자바1</code>. 어노테이션이 없어도 파라미터 이름과 같은 <code>?title=</code> 값을 넣어 줘요 (<code>@RequestParam</code> 생략).</p></div>
+    <div><span class="k"><code>@PostMapping("")</code><br><code>@RequestBody BookRequestDto dto</code></span><p><code>POST /books</code>. 본문 JSON을 DTO로 바꿔서 받아요. <strong>@RequestBody가 없으면 값이 전부 null.</strong> return한 Long(새 id)이 응답 본문이 돼요.</p></div>
+    <div><span class="k"><code>@PutMapping("/{id}")</code><br><code>dto.setId(id)</code></span><p><code>PUT /books/14</code> + 본문 <code>{"price":42000}</code>. 어느 책인지는 주소에, 바꿀 값은 본문에 있어서, 주소의 id를 DTO에 넣은 뒤 Service에 넘겨요.</p></div>
+    <div><span class="k"><code>@DeleteMapping("/{id}")</code><br><code>ResponseEntity&lt;Void&gt;</code></span><p><code>DELETE /books/14</code>. 돌려줄 데이터가 없으니 <code>ResponseEntity.noContent().build()</code>로 상태 코드 204(성공, 내용 없음)만 보내요.</p></div>
+    <div><code>@Operation(...)</code><p>Swagger 화면에 보일 제목과 설명. 동작과는 무관해요.</p></div>
+  </div>
+
+  <h2>6-1. Swagger로 CRUD 해 보기</h2>
+  <p>서버를 켜고 <code>http://localhost:8080/swagger-ui/index.html</code> → API를 펼치고 <strong>Try it out</strong> → 값 입력 → <strong>Execute</strong>.</p>
+  <div class="tbl"><table>
+    <tr><th>API</th><th>입력</th><th>기대 응답</th></tr>
+    <tr><td><code>GET /books</code></td><td>없음</td><td>200, 책 목록 JSON 배열</td></tr>
+    <tr><td><code>GET /books/{id}</code></td><td>id: <code>14</code></td><td>200, <code>{"id":14,"isbn":"A1010101",...}</code></td></tr>
+    <tr><td><code>GET /books/title</code></td><td>title: <code>파워 자바1</code></td><td>200, 그 책</td></tr>
+    <tr><td><code>GET /books/isbn</code></td><td>isbn: <code>A1010101</code></td><td>200, 그 책</td></tr>
+    <tr><td><code>POST /books</code></td><td>본문 <code>{"isbn":"B2020","title":"스프링 입문","price":30000,"author":"성춘향"}</code> (id는 빼도 됨)</td><td>200, 새 id (예: <code>25</code>)</td></tr>
+    <tr><td><code>PUT /books/{id}</code></td><td>id: <code>14</code>, 본문 <code>{"price":42000}</code></td><td>200, <code>14</code></td></tr>
+    <tr><td><code>DELETE /books/{id}</code></td><td>id: 방금 만든 <code>25</code></td><td>204, 본문 없음</td></tr>
+  </table></div>
+  <div class="note"><b>응답 아래 Curl 칸</b><p>Swagger가 보여 주는 curl 명령은 터미널에서 똑같이 요청을 보내는 방법이에요. React의 fetch와 같은 내용이에요.</p></div>
+  <div class="check"><b>CRUD 완성</b><p>위 7개가 기대 응답대로 나오면 book CRUD가 끝난 거예요. 다음 탭에서 요청 하나하나가 파일들을 어떻게 지나가는지 정리해요.</p></div>
+</section>
+
+<!-- ============ CRUD 7 ============ -->
+<section class="page" id="crud7" role="tabpanel" hidden>
+  <div class="eyebrow">15 · CRUD 처음부터 · 정리</div>
+  <h1>C · R · U · D 흐름 추적</h1>
+  <p class="lead">요청 하나가 들어와서 응답이 나갈 때까지 어떤 파일의 어떤 줄을 지나고, 그때 데이터가 어떤 모양인지 따라가 봐요. 에러가 나면 이 표에서 어느 칸에서 멈췄는지 찾으면 돼요.</p>
+
+  <h2>C · POST /books</h2>
+  <div class="tbl"><table>
+    <tr><th>층</th><th>지나는 코드</th><th>데이터 모양</th></tr>
+    <tr><td><span class="chip c-front">화면</span></td><td><code>POST /books</code></td><td>JSON <code>{"isbn":"B2020","title":"스프링 입문","price":30000,"author":"성춘향"}</code></td></tr>
+    <tr><td><span class="chip c-ctrl">Controller</span></td><td><code>postBook(@RequestBody BookRequestDto dto)</code></td><td>DTO (id=null, isbn=B2020, …)</td></tr>
+    <tr><td><span class="chip c-svc">Service</span></td><td><code>mapper.map(dto, Book.class)</code></td><td>Entity Book (id=null)</td></tr>
+    <tr><td><span class="chip c-repo">Repository</span></td><td><code>bookRepository.save(book)</code></td><td>SQL <code>insert into book ...</code></td></tr>
+    <tr><td><span class="chip c-db">DB</span></td><td>새 줄 추가, id 25 부여</td><td>row</td></tr>
+    <tr><td><span class="chip c-svc">Service</span></td><td><code>.getId()</code></td><td><code>Long 25</code></td></tr>
+    <tr><td><span class="chip c-front">화면</span></td><td>200 OK</td><td><code>25</code></td></tr>
+  </table></div>
+
+  <h2>R · GET /books/14</h2>
+  <div class="tbl"><table>
+    <tr><th>층</th><th>지나는 코드</th><th>데이터 모양</th></tr>
+    <tr><td><span class="chip c-front">화면</span></td><td><code>GET /books/14</code></td><td>주소 안의 14</td></tr>
+    <tr><td><span class="chip c-ctrl">Controller</span></td><td><code>getBookById(@PathVariable Long id)</code></td><td><code>Long 14</code></td></tr>
+    <tr><td><span class="chip c-svc">Service</span></td><td><code>readId(14)</code></td><td></td></tr>
+    <tr><td><span class="chip c-repo">Repository</span></td><td><code>findById(14)</code></td><td>SQL <code>select ... where id=14</code></td></tr>
+    <tr><td><span class="chip c-svc">Service</span></td><td><code>.orElseThrow()</code></td><td>Optional → Entity Book</td></tr>
+    <tr><td><span class="chip c-svc">Service</span></td><td><code>mapper.map(book, BookRequestDto.class)</code></td><td>DTO</td></tr>
+    <tr><td><span class="chip c-front">화면</span></td><td>200 OK</td><td>JSON <code>{"id":14,"isbn":"A1010101","title":"파워 자바1","price":36000,"author":"홍길동1"}</code></td></tr>
+  </table></div>
+  <p><code>GET /books</code>(전체)는 같은 길인데 <code>findAll()</code> → stream으로 하나씩 DTO 변환 → JSON 배열이에요.</p>
+
+  <h2>U · PUT /books/14</h2>
+  <div class="tbl"><table>
+    <tr><th>층</th><th>지나는 코드</th><th>데이터 모양</th></tr>
+    <tr><td><span class="chip c-front">화면</span></td><td><code>PUT /books/14</code></td><td>주소 14 + JSON <code>{"price":42000}</code></td></tr>
+    <tr><td><span class="chip c-ctrl">Controller</span></td><td><code>putBook(@PathVariable id, @RequestBody dto)</code></td><td>id=14, DTO(price=42000, 나머지 null)</td></tr>
+    <tr><td><span class="chip c-ctrl">Controller</span></td><td><code>dto.setId(id)</code></td><td>DTO(id=14, price=42000)</td></tr>
+    <tr><td><span class="chip c-repo">Repository</span></td><td><code>findById(14).get()</code></td><td>Entity Book (DB의 기존 값 전부)</td></tr>
+    <tr><td><span class="chip c-svc">Service</span></td><td><code>book.changePrice(42000)</code></td><td>Entity price만 42000</td></tr>
+    <tr><td><span class="chip c-repo">Repository</span></td><td><code>save(book)</code></td><td>SQL <code>update book set ... where id=14</code></td></tr>
+    <tr><td><span class="chip c-front">화면</span></td><td>200 OK</td><td><code>14</code></td></tr>
+  </table></div>
+
+  <h2>D · DELETE /books/25</h2>
+  <div class="tbl"><table>
+    <tr><th>층</th><th>지나는 코드</th><th>데이터 모양</th></tr>
+    <tr><td><span class="chip c-front">화면</span></td><td><code>DELETE /books/25</code></td><td>주소 안의 25</td></tr>
+    <tr><td><span class="chip c-ctrl">Controller</span></td><td><code>deleteMemo(@PathVariable Long id)</code></td><td><code>Long 25</code></td></tr>
+    <tr><td><span class="chip c-svc">Service</span></td><td><code>delete(25)</code></td><td></td></tr>
+    <tr><td><span class="chip c-repo">Repository</span></td><td><code>deleteById(25)</code></td><td>SQL <code>delete from book where id=25</code></td></tr>
+    <tr><td><span class="chip c-ctrl">Controller</span></td><td><code>ResponseEntity.noContent().build()</code></td><td>상태 코드만</td></tr>
+    <tr><td><span class="chip c-front">화면</span></td><td>204 No Content</td><td>본문 없음</td></tr>
+  </table></div>
+
+  <h2>새 기능을 추가할 때: 저자로 찾기 예시</h2>
+  <p>같은 순서로 아래층부터 한 줄씩 추가하면 돼요.</p>
+  <ol class="steps">
+    <li><div><p><span class="chip c-repo">Repository</span> 쿼리 메서드 추가</p>
+      <script type="text/plain" class="src" data-lang="java">List<Book> findByAuthor(String author);</script></div></li>
+    <li><div><p><span class="chip c-svc">Service</span> 메서드 추가 (찾기 → DTO 변환)</p>
+      <script type="text/plain" class="src" data-lang="java">public List<BookRequestDto> readAuthor(String author) {
+    return bookRepository.findByAuthor(author).stream()
+            .map(book -> mapper.map(book, BookRequestDto.class))
+            .collect(Collectors.toList());
+}</script></div></li>
+    <li><div><p><span class="chip c-ctrl">Controller</span> 주소 연결</p>
+      <script type="text/plain" class="src" data-lang="java">@GetMapping("/author")
+public List<BookRequestDto> getBookByAuthor(String author) {
+    return service.readAuthor(author);
+}</script></div></li>
+    <li><div><p>저장하면 devtools가 서버를 재시작 → Swagger에서 <code>GET /books/author?author=홍길동1</code>.</p></div></li>
+  </ol>
+
+  <h2>파일을 만들 때마다 확인할 체크리스트</h2>
+  <ul class="checklist">
+    <li>첫 줄 <code>package com.example.book.폴더명;</code>이 실제 폴더와 같은가</li>
+    <li>파일 이름 = <code>public class</code> 이름인가</li>
+    <li>import가 <code>java.util.List</code>, 우리 <code>Book</code>, 스프링 <code>RequestBody</code>인가</li>
+    <li>Entity에 <code>@NoArgsConstructor</code>가 있는가</li>
+    <li>Repository가 <code>extends JpaRepository&lt;Entity, Long&gt;</code>인가</li>
+    <li>주입받는 필드에 <code>final</code>, 클래스에 <code>@RequiredArgsConstructor</code>가 있는가</li>
+    <li>JSON을 받는 파라미터에 <code>@RequestBody</code>가 있는가</li>
+    <li>Service 메서드가 이름에 맞는 Repository 메서드를 부르는가</li>
+  </ul>
+</section>
+
+<!-- ============ JPA DEEP 1: SQL LOG ============ -->
+<section class="page" id="sqllog" role="tabpanel" hidden>
+  <div class="eyebrow">16 · JPA 심화 · 10/21 수업</div>
+  <h1>터미널 SQL 로그 읽는 법</h1>
+  <p class="lead">JPA를 쓰면 SQL을 직접 안 쓰지만, 실제로 나간 SQL은 터미널에 전부 찍혀요. 연관관계 오류는 대부분 "SQL이 몇 번, 어떤 모양으로, 언제 나갔나"를 보면 찾을 수 있어요. 이 탭부터 나오는 로그는 전부 2026-10-21 수업 코드를 실제로 실행해서 받은 출력이에요.</p>
+
+  <h2>로그를 켜는 설정</h2>
+  <p><code>application.properties</code>의 이 네 줄 덕분에 SQL이 보여요. 하나라도 빠지면 해당 정보가 안 찍혀요.</p>
+  <div class="tbl"><table>
+    <tr><th>설정</th><th>터미널에 보이는 것</th></tr>
+    <tr><td><code>logging.level.org.hibernate.SQL=debug</code></td><td>실행된 SQL 자체</td></tr>
+    <tr><td><code>logging.level.org.hibernate.orm.jdbc.bind=trace</code></td><td>SQL의 <code>?</code> 자리에 들어간 실제 값</td></tr>
+    <tr><td><code>hibernate.format_sql=true</code></td><td>SQL을 select / from / where 단위로 줄바꿈</td></tr>
+    <tr><td><code>hibernate.highlight_sql=true</code></td><td>키워드를 파란색으로 (아래 ?[34m 참고)</td></tr>
+  </table></div>
+
+  <h2>어디서 보나</h2>
+  <ul>
+    <li><strong>서버 실행 중:</strong> <code>./gradlew bootRun</code>을 띄운 터미널. Swagger로 요청할 때마다 SQL이 찍혀요.</li>
+    <li><strong>VS Code ▶ 테스트:</strong> 아래 패널의 <strong>DEBUG CONSOLE</strong> 또는 <strong>TEST RESULTS</strong> 탭.</li>
+    <li><strong>터미널 테스트:</strong> <code>./gradlew test --tests TeamTest.read -i</code> (<code>-i</code>가 있어야 출력이 보여요). 지난 실행 결과는 <code>build/test-results/test/TEST-*.xml</code>에도 남아 있어요.</li>
+  </ul>
+
+  <h2>한 줄 해부</h2>
+  <p>TeamTest.read()를 실행했을 때 터미널에 찍힌 원래 모양이에요.</p>
+  <script type="text/plain" class="src" data-lang="plaintext" data-file="실제 터미널 출력 · TeamTest.read()">2026-10-22T00:27:47.139+09:00 DEBUG 36556 --- [book] [    Test worker] org.hibernate.SQL                        :
+    ?[34mselect?[0m
+        tm1_0.member_id,
+        tm1_0.member_name,
+        t1_0.team_id,
+        t1_0.team_name
+    ?[34mfrom?[0m
+        team_member tm1_0
+    ?[34mleft?[0m ?[34mjoin?[0m
+        team t1_0
+            ?[34mon?[0m t1_0.team_id=tm1_0.team_id
+    ?[34mwhere?[0m
+        tm1_0.member_id=?
+2026-10-22T00:27:47.139+09:00 TRACE 36556 --- [book] [    Test worker] org.hibernate.orm.jdbc.bind              : binding parameter (1:BIGINT) <- [1]</script>
+  <div class="explain">
+    <div><code>2026-10-22T00:27:47.139+09:00</code><p>찍힌 시각. 두 SQL 사이 시간 차이로 느린 쿼리를 찾을 수 있어요.</p></div>
+    <div><code>DEBUG / TRACE</code><p>로그 레벨. SQL은 DEBUG, 바인딩 값은 TRACE로 찍혀요.</p></div>
+    <div><code>36556</code><p>프로세스 번호(PID). 8080 충돌 때 <code>kill</code>할 그 번호예요.</p></div>
+    <div><code>[book] [Test worker]</code><p>앱 이름과 실행 스레드. 서버로 요청하면 <code>[nio-8080-exec-1]</code>처럼 바뀌어요.</p></div>
+    <div><code>org.hibernate.SQL</code><p>누가 찍었나. Hibernate의 SQL 로그라는 뜻.</p></div>
+    <div><code>?[34mselect?[0m</code><p>색깔 코드예요(highlight_sql). 터미널에선 select가 파란색으로 보이고, 파일이나 일부 창에선 이렇게 깨져 보여요. 무시하고 읽으면 돼요.</p></div>
+    <div><code>team_member tm1_0</code><p><strong>별칭(alias).</strong> team_member 테이블을 <code>tm1_0</code>이라고 부르겠다는 뜻. 엔티티 이름 앞 글자(TeamMember → tm) + 번호. <code>t1_0</code>은 team.</p></div>
+    <div><code>tm1_0.member_id, … t1_0.team_name</code><p>가져오는 컬럼. <strong>t1_0(team) 컬럼이 같이 있으면 팀도 함께 가져온다</strong>는 뜻이에요. 연관 객체를 언제 가져오는지 판단하는 핵심 단서.</p></div>
+    <div><code>left join team t1_0 on …</code><p>두 테이블을 FK로 연결. 아래 "JOIN 종류"에서 자세히.</p></div>
+    <div><code>where tm1_0.member_id=?</code><p><code>?</code>는 값이 들어갈 자리. 실제 값은 바로 아래 binding 줄에.</p></div>
+    <div><code>binding parameter (1:BIGINT) &lt;- [1]</code><p>첫 번째 <code>?</code>에 BIGINT(Long) 값 1을 넣었다. <code>findById(1L)</code>의 1이에요. 값이 예상과 다르면 여기서 바로 보여요.</p></div>
+  </div>
+
+  <h2>자바 코드 ↔ SQL 대응표</h2>
+  <div class="tbl"><table>
+    <tr><th>자바에서 한 일</th><th>터미널에 찍히는 SQL</th></tr>
+    <tr><td><code>findById(1L)</code></td><td><code>select … where xx.id=?</code> + binding <code>[1]</code></td></tr>
+    <tr><td><code>findAll()</code></td><td><code>select … from 테이블</code> (where 없음)</td></tr>
+    <tr><td><code>findByTitle("…")</code></td><td><code>select … where xx.title=?</code></td></tr>
+    <tr><td><code>save(새 객체)</code></td><td><code>insert into … values (?, ?, default)</code> (<code>default</code> = id 자동 생성)</td></tr>
+    <tr><td><code>save(조회한 객체)</code></td><td><code>select …</code> 후 값이 바뀌었으면 <code>update … set … where id=?</code></td></tr>
+    <tr><td><code>deleteById(1L)</code></td><td><code>select …</code> 먼저, 그다음 <code>delete from … where id=?</code></td></tr>
+    <tr><td>연관 객체 <code>getTeam().getName()</code></td><td>LAZY면 이 순간 <code>select … from team where team_id=?</code></td></tr>
+    <tr><td>서버 시작 (<code>ddl-auto</code>)</td><td><code>create table</code>, <code>alter table … add constraint … foreign key</code></td></tr>
+  </table></div>
+
+  <h2>로그 볼 때 체크 4가지</h2>
+  <ol class="steps">
+    <li><div><p><strong>SQL이 몇 개인가?</strong> findById 한 번에 select가 2개 이상이면 연관 객체를 따로 가져온 거예요. 목록 조회에서 같은 모양 select가 반복되면 N+1이에요 (LAZY와 EAGER 탭).</p></div></li>
+    <li><div><p><strong>join이 있나? 어떤 join인가?</strong> <code>left join</code>이면 연관 객체를 함께, 없으면 따로 또는 나중에.</p></div></li>
+    <li><div><p><strong>where 조건과 binding 값이 맞나?</strong> 엉뚱한 컬럼(<code>isbn=?</code>에 제목이 들어감)이나 없는 id가 여기서 보여요.</p></div></li>
+    <li><div><p><strong>println 결과가 SQL 사이 어디에 찍혔나?</strong> 출력보다 SQL이 먼저면 미리 가져온 것(EAGER), 출력 직전에 SQL이 끼어들면 그때 가져온 것(LAZY)이에요. 테스트에 <code>System.out.println("--- 여기")</code>를 넣으면 경계가 잘 보여요.</p></div></li>
+  </ol>
+
+  <h2>로그에 같이 나오는 Oracle 에러</h2>
+  <div class="tbl"><table>
+    <tr><th>에러 코드</th><th>뜻</th><th>우리 코드에서 언제</th></tr>
+    <tr><td><code>ORA-00001</code></td><td>unique constraint violated</td><td>isbn이 같은 책을 두 번 insert</td></tr>
+    <tr><td><code>ORA-01400</code></td><td>cannot insert NULL</td><td><code>nullable=false</code>인 필드가 null (title 없이 POST)</td></tr>
+    <tr><td><code>ORA-02292</code></td><td>child record found</td><td>멤버가 남아 있는 팀을 삭제</td></tr>
+    <tr><td><code>ORA-02291</code></td><td>parent key not found</td><td>없는 team_id를 FK로 넣음</td></tr>
+    <tr><td><code>ORA-00942</code></td><td>table or view does not exist</td><td>테이블 이름 오타, <code>@Table</code> 이름 불일치</td></tr>
+    <tr><td><code>ORA-00904</code></td><td>invalid identifier</td><td>컬럼 이름 불일치 (<code>@Column(name)</code> 바꿨는데 테이블은 그대로)</td></tr>
+    <tr><td><code>ORA-01109</code></td><td>database not open</td><td>OrbStack에서 oracle-db를 막 켰을 때. 1분쯤 기다리면 돼요</td></tr>
+  </table></div>
+  <p>에러가 나면 로그에서 <code>ORA-</code>를 검색하고, 그 바로 위에 찍힌 SQL과 binding 값을 보면 어떤 SQL이 왜 실패했는지 알 수 있어요.</p>
+</section>
+
+<!-- ============ JPA DEEP 2: RELATIONS ============ -->
+<section class="page" id="relation" role="tabpanel" hidden>
+  <div class="eyebrow">17 · JPA 심화 · 10/21 수업</div>
+  <h1>연관관계 4가지와 JOIN</h1>
+  <p class="lead">DB는 테이블끼리 FK(외래키) 컬럼 하나로 연결하고, 자바는 필드에 객체를 넣어서 연결해요. JPA가 이 둘을 이어 주는데, 어떤 관계냐에 따라 FK 위치와 SQL 모양이 달라져요.</p>
+
+  <h2>한눈에 보기</h2>
+  <div class="tbl"><table class="wide">
+    <tr><th>관계</th><th>우리 예</th><th>FK가 있는 곳</th><th>자바 코드</th><th>기본 fetch</th><th>조회 SQL 모양</th></tr>
+    <tr><td><strong>N:1</strong> ManyToOne</td><td>멤버 → 팀</td><td><code>team_member.team_id</code></td><td><code>@ManyToOne</code> <code>@JoinColumn</code></td><td>EAGER</td><td><code>left join team</code></td></tr>
+    <tr><td><strong>1:N</strong> OneToMany</td><td>팀 → 멤버들</td><td>상대 테이블 <code>team_member.team_id</code></td><td><code>@OneToMany(mappedBy="team")</code></td><td>LAZY</td><td><code>select … from team_member where team_id=?</code></td></tr>
+    <tr><td><strong>1:1</strong> OneToOne</td><td>회원 ↔ 라커</td><td>한쪽만 <code>sports_member.locker_id</code></td><td><code>@OneToOne</code> <code>@JoinColumn</code> / <code>mappedBy</code></td><td>EAGER</td><td><code>left join</code> 또는 따로 select</td></tr>
+    <tr><td><strong>N:M</strong> ManyToMany</td><td>학생 ↔ 강의</td><td>중간 테이블 <code>student_course</code></td><td><code>@ManyToMany</code> <code>@JoinTable</code></td><td>LAZY</td><td>중간 테이블과 <code>join</code></td></tr>
+  </table></div>
+
+  <h2>먼저 알아 둘 두 단어: 주인과 mappedBy</h2>
+  <ul>
+    <li><strong>연관관계의 주인</strong> = 자기 테이블에 FK 컬럼이 있는 쪽. <code>@JoinColumn</code>을 붙여요. FK 값을 넣고 바꾸는 건 주인만 할 수 있어요.</li>
+    <li><strong><code>mappedBy</code></strong> = "FK는 저쪽 필드가 관리해요. 나는 읽기만 해요." 반대쪽(주인이 아닌 쪽)에 붙이고, 이쪽 테이블엔 컬럼이 안 생겨요. 값은 주인 필드의 이름을 적어요 (<code>mappedBy = "team"</code> → TeamMember의 <code>team</code> 필드).</li>
+    <li>DB의 FK는 방향이 없어서 양쪽에서 join할 수 있지만, 자바는 필드가 있는 쪽에서만 접근할 수 있어요. 양쪽에 필드를 두면 <strong>양방향</strong>, 한쪽만 두면 <strong>단방향</strong>.</li>
+  </ul>
+
+  <h2>JOIN 종류: inner join과 left join</h2>
+  <p>team_member 테이블에 팀이 없는 멤버(김신입, team_id = null)가 있다고 해 볼게요.</p>
+  <div class="two">
+    <div class="tbl"><table>
+      <tr><th colspan="3">team_member</th></tr>
+      <tr><th>member_id</th><th>member_name</th><th>team_id</th></tr>
+      <tr><td>1</td><td>홍길동</td><td>1</td></tr>
+      <tr><td>2</td><td>성춘향</td><td>2</td></tr>
+      <tr><td>5</td><td>김신입</td><td>null</td></tr>
+    </table></div>
+    <div class="tbl"><table>
+      <tr><th colspan="2">team</th></tr>
+      <tr><th>team_id</th><th>team_name</th></tr>
+      <tr><td>1</td><td>team1</td></tr>
+      <tr><td>2</td><td>team2</td></tr>
+    </table></div>
+  </div>
+  <div class="tbl"><table>
+    <tr><th>JOIN</th><th>결과</th><th>JPA가 쓰는 때</th></tr>
+    <tr><td><code>join</code> (= inner join)</td><td>양쪽에 짝이 있는 줄만. 홍길동–team1, 성춘향–team2. <strong>김신입은 빠짐</strong></td><td>ManyToMany 컬렉션 조회, <code>join fetch</code></td></tr>
+    <tr><td><code>left join</code> (= left outer join)</td><td>왼쪽(team_member)은 전부 남기고, 짝이 없으면 팀 칸을 null로. <strong>김신입–null도 나옴</strong></td><td>EAGER로 연관 객체를 같이 가져올 때 (FK가 null일 수 있으니까)</td></tr>
+  </table></div>
+  <div class="note"><b>왜 JPA는 left join을 쓸까?</b><p><code>@ManyToOne</code>은 기본적으로 FK가 비어 있어도 되는 관계예요. inner join을 쓰면 팀 없는 멤버를 findById 했을 때 결과가 아예 사라지니까, 안전하게 left join을 써요. <code>@ManyToOne(optional = false)</code>로 "반드시 팀이 있다"고 하면 inner join으로 바뀌어요.</p></div>
+
+  <!-- ManyToOne -->
+  <h2>① @ManyToOne: 멤버 여러 명 → 팀 하나</h2>
+  <script type="text/plain" class="src" data-lang="java" data-file="entity/TeamMember.java (주인)">@JoinColumn(name = "team_id")   // FK 컬럼 이름. 안 쓰면 "필드명_상대PK명" = team_team_id
+@ManyToOne                      // 기본 EAGER
+private Team team;</script>
+  <div class="tbl"><table>
+    <tr><th colspan="3">지금 DB의 team_member (실제 데이터)</th></tr>
+    <tr><th>member_id</th><th>member_name</th><th>team_id (FK)</th></tr>
+    <tr><td>1</td><td>홍길동</td><td>1</td></tr>
+    <tr><td>2</td><td>성춘향</td><td>2</td></tr>
+    <tr><td>4</td><td>성지호</td><td>1</td></tr>
+  </table></div>
+  <p><code>TeamTest.read()</code>: <code>teamMemberRepository.findById(1L)</code> → <code>member1.getTeam().getName()</code></p>
+  <script type="text/plain" class="src" data-lang="sql" data-file="실제 터미널 출력 · TeamTest.read()">-- ① 멤버를 찾으면서 팀을 left join으로 같이 (ManyToOne EAGER)
+select
+    tm1_0.member_id,
+    tm1_0.member_name,
+    t1_0.team_id,
+    t1_0.team_name
+from
+    team_member tm1_0
+left join
+    team t1_0
+        on t1_0.team_id=tm1_0.team_id
+where
+    tm1_0.member_id=?
+binding parameter (1:BIGINT) <- [1]
+
+-- ② 팀을 가져왔더니, 팀의 teamMember 목록도 EAGER라서 또 조회
+select
+    tm1_0.team_id,
+    tm1_0.member_id,
+    tm1_0.member_name
+from
+    team_member tm1_0
+where
+    tm1_0.team_id=?
+binding parameter (1:BIGINT) <- [1]
+
+TeamMember(id=1, name=홍길동)
+team1</script>
+  <div class="explain">
+    <div><code>left join team t1_0</code><p>ManyToOne이 EAGER라서 멤버 한 명 조회에 팀이 딸려 와요. 그래서 <code>getTeam().getName()</code>을 할 때는 SQL이 안 나가요 (출력 <code>team1</code> 앞에 추가 SQL 없음).</p></div>
+    <div><code>두 번째 select</code><p>내가 부르지 않은 쿼리예요. Team.java의 <code>@OneToMany(…, fetch = FetchType.EAGER)</code> 때문에 팀을 가져오는 순간 그 팀의 멤버 목록까지 가져왔어요. <strong>EAGER가 EAGER를 부르는 연쇄.</strong> 연관관계가 많아지면 이런 숨은 쿼리가 급격히 늘어요.</p></div>
+    <div><code>TeamMember(id=1, name=홍길동)</code><p><code>@ToString(exclude = "team")</code> 덕분에 team이 안 찍혀요. 빼면 Team → 멤버 → Team… 무한 반복으로 StackOverflowError.</p></div>
+  </div>
+
+  <!-- OneToMany -->
+  <h2>② @OneToMany: 팀 하나 → 멤버 목록</h2>
+  <script type="text/plain" class="src" data-lang="java" data-file="entity/Team.java (주인 아님)">@Builder.Default
+@OneToMany(mappedBy = "team", fetch = FetchType.EAGER)   // 기본은 LAZY인데 EAGER로 바꿔 둔 상태
+private List<TeamMember> teamMember = new ArrayList<>();</script>
+  <p><code>TeamTest.read2()</code>: <code>teamRepository.findById(1L)</code> → <code>System.out.println(team)</code></p>
+  <script type="text/plain" class="src" data-lang="sql" data-file="실제 터미널 출력 · TeamTest.read2()">select
+    t1_0.team_id,
+    t1_0.team_name,
+    tm1_0.team_id,
+    tm1_0.member_id,
+    tm1_0.member_name
+from
+    team t1_0
+left join
+    team_member tm1_0
+        on t1_0.team_id=tm1_0.team_id
+where
+    t1_0.team_id=?
+binding parameter (1:BIGINT) <- [1]
+
+Team(id=1, name=team1, teamMember=[TeamMember(id=1, name=홍길동), TeamMember(id=4, name=성지호)])</script>
+  <div class="explain">
+    <div><code>from team left join team_member</code><p>이번엔 팀이 왼쪽. FK는 team_member에 있지만 같은 <code>team_id</code>로 반대 방향 join이 돼요.</p></div>
+    <div><code>DB가 돌려준 줄</code><p>팀 1개에 멤버 2명이니 결과는 <strong>2줄</strong>(team1–홍길동, team1–성지호)이에요. Hibernate가 이걸 Team 객체 하나 + 리스트 2칸으로 합쳐 줘요.</p></div>
+    <div><code>LAZY였다면</code><p>이 SQL엔 team 컬럼만 있고, 리스트를 처음 쓰는 순간 <code>select … from team_member where team_id=?</code>가 따로 나가요. 트랜잭션이 끝난 뒤라면 그 순간 LazyInitializationException (수업에서 EAGER로 바꾼 이유).</p></div>
+  </div>
+  <div class="warn"><b>mappedBy를 빼먹으면 중간 테이블이 생겨요</b>
+    <p>지금 DB에 <code>TEAM_TEAM_MEMBER</code>라는 테이블이 있어요 (컬럼 <code>TEAM_TEAM_ID</code>, <code>TEAM_MEMBER_MEMBER_ID</code>, 데이터 0건). 예전에 Team에 <code>@OneToMany</code>만 쓰고 <code>mappedBy</code>가 없을 때 생긴 거예요. mappedBy가 없으면 JPA는 "팀이 직접 관리하는 별도 관계"로 보고 중간 테이블을 만들어요. 실습 프로젝트에서 재현한 DDL:</p></div>
+  <script type="text/plain" class="src" data-lang="sql" data-file="실제 터미널 출력 · mappedBy 없는 @OneToMany (실습 프로젝트)">create table rd_group_teams (
+    teams_team_id number(19,0) not null unique,
+    uni_group_group_id number(19,0) not null
+)</script>
+  <p><code>ddl-auto=update</code>는 테이블을 만들기만 하고 지우지는 않아서 그대로 남아 있어요. 동작에 영향은 없고, 지우고 싶으면 DB에서 <code>drop table team_team_member;</code>.</p>
+
+  <!-- OneToOne -->
+  <h2>③ @OneToOne: 회원 한 명 ↔ 라커 하나 (10/21 수업)</h2>
+  <p>양방향으로 만들고 양쪽 다 <code>LAZY</code>로 설정했어요.</p>
+  <script type="text/plain" class="src" data-lang="java" data-file="entity/SportsMember.java (주인 · FK 있음)">@JoinColumn(name = "locker_id")
+@OneToOne(fetch = FetchType.LAZY)
+private Locker locker;</script>
+  <script type="text/plain" class="src" data-lang="java" data-file="entity/Locker.java (주인 아님)">@OneToOne(mappedBy = "locker", fetch = FetchType.LAZY)
+private SportsMember sportsMember;</script>
+  <div class="tbl"><table>
+    <tr><th colspan="3">지금 DB (실제 데이터)</th></tr>
+    <tr><th>locker</th><th colspan="2">sports_member</th></tr>
+    <tr><td>1 locker1</td><td>1 홍길동</td><td>locker_id = 1</td></tr>
+    <tr><td>2 locker1</td><td>2 홍길동</td><td>locker_id = 2</td></tr>
+  </table></div>
+
+  <h3>LockerTest.read(): 라커 조회 → 회원 조회 (트랜잭션 없음)</h3>
+  <script type="text/plain" class="src" data-lang="sql" data-file="실제 터미널 출력 · LockerTest.read()">-- lockerRepository.findById(1L)
+select l1_0.locker_id, l1_0.locker_name from locker l1_0 where l1_0.locker_id=?
+binding parameter (1:BIGINT) <- [1]
+-- ↓ LAZY라고 했는데도 바로 회원을 조회함
+select sm1_0.member_id, sm1_0.locker_id, sm1_0.member_name from sports_member sm1_0 where sm1_0.locker_id=?
+binding parameter (1:BIGINT) <- [1]
+Locker(id=1, name=locker1)
+
+-- sportsMemberRepository.findById(1L)
+select sm1_0.member_id, sm1_0.locker_id, sm1_0.member_name from sports_member sm1_0 where sm1_0.member_id=?
+binding parameter (1:BIGINT) <- [1]
+SportsMember(id=1, name=홍길동)</script>
+  <p class="cap">읽기 쉽게 select 하나를 한 줄로 합쳤어요. 실제 터미널에서는 위 탭처럼 줄바꿈돼서 나와요.</p>
+  <div class="explain">
+    <div><code>Locker 쪽 LAZY가 안 먹음</code><p>Locker 테이블엔 회원 정보가 없어요 (FK는 sports_member에). 그래서 Hibernate는 "이 라커에 회원이 있나 없나"조차 알려면 sports_member를 조회해야 해요. 있는지도 모르는 상태로 가짜 객체(프록시)를 만들 수 없으니, <strong>mappedBy 쪽 @OneToOne은 LAZY를 적어도 즉시 조회</strong>해요. 그래서 select가 2번.</p></div>
+    <div><code>SportsMember 쪽 LAZY는 먹음</code><p>sports_member 줄에 <code>locker_id</code>가 있으니, 라커 id만 아는 가짜 객체를 넣어 둘 수 있어요. 그래서 회원 조회 SQL엔 join이 없고 locker 테이블 조회도 없어요.</p></div>
+    <div><code>트랜잭션 없이도 성공</code><p>회원의 locker를 실제로 꺼내 쓰지 않았기 때문이에요 (<code>@ToString(exclude = "locker")</code>). 여기서 <code>getLocker().getName()</code>을 했다면 LazyInitializationException.</p></div>
+  </div>
+
+  <h3>LockerTest.read2(): 같은 걸 @Transactional 안에서</h3>
+  <script type="text/plain" class="src" data-lang="sql" data-file="실제 터미널 출력 · LockerTest.read2()">select … from locker l1_0 where l1_0.locker_id=?            -- findById(1L)
+binding parameter (1:BIGINT) <- [1]
+select … from sports_member sm1_0 where sm1_0.locker_id=?   -- 역방향 1:1이라 즉시
+binding parameter (1:BIGINT) <- [1]
+Locker(id=1, name=locker1)
+홍길동          -- locker1.getSportsMember().getName() : 추가 SQL 없음
+locker1         -- sportsMemberRepository.findById(1L).getLocker().getName() : SQL 0개!</script>
+  <div class="explain">
+    <div><code>홍길동</code><p>회원은 이미 두 번째 select로 가져와서 SQL 없이 출력.</p></div>
+    <div><code>locker1 (SQL 0개)</code><p><code>sportsMemberRepository.findById(1L)</code>를 불렀는데 select가 안 나갔어요. 같은 트랜잭션 안에서 1번 회원을 이미 가져왔기 때문에, JPA가 메모리(1차 캐시)에 있던 객체를 그대로 돌려줬어요. 라커 1번도 이미 있어서 <code>getLocker().getName()</code>도 SQL 없음. 영속성 컨텍스트 탭에서 자세히.</p></div>
+  </div>
+  <p><code>read3()</code>은 트랜잭션 없이 <code>locker1.getSportsMember().getName()</code>을 하는데도 성공해요. 역방향 1:1은 조회할 때 이미 회원을 가져와 두기 때문이에요 (read와 같은 SQL 2개).</p>
+
+  <!-- ManyToMany -->
+  <h2>④ @ManyToMany: 학생 여러 명 ↔ 강의 여러 개</h2>
+  <p>아직 수업 코드엔 없어서, 학생–강의 예제를 별도 실습 프로젝트(테이블 이름 <code>rd_</code>로 시작, 실행 후 자동 삭제)로 만들어 실행했어요.</p>
+  <p>학생 한 명이 여러 강의를 듣고, 강의 하나를 여러 학생이 들어요. 어느 한쪽 테이블에 FK 컬럼 하나로는 표현이 안 돼서 <strong>중간 테이블</strong>이 생겨요.</p>
+  <script type="text/plain" class="src" data-lang="java" data-file="Student.java (주인)">@ManyToMany                                   // 기본 LAZY
+@JoinTable(name = "rd_student_course",          // 중간 테이블 이름
+    joinColumns = @JoinColumn(name = "student_id"),       // 나(학생)를 가리키는 FK
+    inverseJoinColumns = @JoinColumn(name = "course_id")) // 상대(강의)를 가리키는 FK
+private List<Course> courses = new ArrayList<>();</script>
+  <script type="text/plain" class="src" data-lang="java" data-file="Course.java (주인 아님)">@ManyToMany(mappedBy = "courses")
+private List<Student> students = new ArrayList<>();</script>
+  <script type="text/plain" class="src" data-lang="sql" data-file="실제 터미널 출력 · 서버 시작 시 DDL">create table rd_student_course (
+    course_id number(19,0) not null,
+    student_id number(19,0) not null
+)
+alter table if exists rd_student_course add constraint FKspldnuk2wh3h45s1aphbh2iul foreign key (course_id) references rd_course
+alter table if exists rd_student_course add constraint FK7bqu47sy76pceay8f3patwccf foreign key (student_id) references rd_student</script>
+  <h3>저장: 홍길동이 자바, 스프링을 수강</h3>
+  <script type="text/plain" class="src" data-lang="java">Student hong = Student.builder().name("홍길동").build();
+hong.getCourses().add(java);
+hong.getCourses().add(spring);
+studentRepository.save(hong);</script>
+  <script type="text/plain" class="src" data-lang="sql" data-file="실제 터미널 출력">insert into rd_student (name, student_id) values (?, default)
+binding parameter (1:VARCHAR) <- [홍길동]
+insert into rd_student_course (student_id, course_id) values (?, ?)
+binding parameter (1:BIGINT) <- [1]
+binding parameter (2:BIGINT) <- [1]
+insert into rd_student_course (student_id, course_id) values (?, ?)
+binding parameter (1:BIGINT) <- [1]
+binding parameter (2:BIGINT) <- [2]</script>
+  <p>학생 1줄 + 중간 테이블에 (학생1, 강의1), (학생1, 강의2) 2줄. 중간 테이블은 엔티티가 없는데도 JPA가 알아서 채워요.</p>
+  <h3>조회: 학생 → 수강 목록</h3>
+  <script type="text/plain" class="src" data-lang="sql" data-file="실제 터미널 출력 (트랜잭션 안)">select s1_0.student_id, s1_0.name from rd_student s1_0 where s1_0.student_id=?
+binding parameter (1:BIGINT) <- [1]
+--- getCourses() 호출 직전
+select
+    c1_0.student_id,
+    c1_1.course_id,
+    c1_1.title
+from
+    rd_student_course c1_0
+join
+    rd_course c1_1
+        on c1_1.course_id=c1_0.course_id
+where
+    c1_0.student_id=?
+binding parameter (1:BIGINT) <- [1]
+수강: 자바
+수강: 스프링</script>
+  <div class="explain">
+    <div><code>첫 select</code><p>학생만 가져와요. 강의는 LAZY라 아직.</p></div>
+    <div><code>--- getCourses() 호출 직전</code><p>출력 <strong>뒤에</strong> SQL이 나왔어요. 목록을 실제로 쓰는 순간 조회한 것 = LAZY의 증거.</p></div>
+    <div><code>from rd_student_course join rd_course</code><p>중간 테이블에서 이 학생의 줄을 찾고(where student_id=1), 그 course_id로 강의 테이블을 inner join. 짝이 있는 것만 필요하니 inner join.</p></div>
+  </div>
+  <div class="note"><b>실무에서는 ManyToMany를 잘 안 써요</b><p>중간 테이블에 "수강 신청일", "성적" 같은 컬럼을 추가할 수 없어요. 그래서 보통 중간 테이블을 <code>Enrollment</code> 같은 엔티티로 직접 만들고, Student ← <code>@ManyToOne</code> – Enrollment – <code>@ManyToOne</code> → Course 두 개의 N:1로 풀어요.</p></div>
+</section>
+
+<!-- ============ JPA DEEP 3: FETCH ============ -->
+<section class="page" id="fetch" role="tabpanel" hidden>
+  <div class="eyebrow">18 · JPA 심화 · 10/21 수업</div>
+  <h1>LAZY와 EAGER: 정확히 무엇이 다른가</h1>
+  <p class="lead">둘 다 "연관된 객체를 가져온다"는 건 같아요. 다른 건 <strong>언제 SELECT를 보내느냐</strong> 하나예요.</p>
+
+  <div class="two">
+    <div class="card"><h3>EAGER (즉시 로딩)</h3><p>주인 엔티티를 조회하는 그 순간 연관 객체도 같이 가져와요. findById면 <code>left join</code> 한 번으로, findAll이면 조회 직후 추가 select로.</p><p>→ 객체를 받았을 때 이미 팀이 진짜 데이터로 채워져 있음.</p></div>
+    <div class="card"><h3>LAZY (지연 로딩)</h3><p>연관 객체 자리에 <strong>프록시</strong>(id만 아는 가짜 객체)를 넣어 두고, <code>getName()</code>처럼 실제 값이 필요한 순간에 select를 보내요.</p><p>→ 그 순간 DB 연결(세션)이 열려 있어야 함.</p></div>
+  </div>
+  <div class="tbl"><table>
+    <tr><th>어노테이션</th><th>기본값</th><th>외우는 법</th></tr>
+    <tr><td><code>@ManyToOne</code>, <code>@OneToOne</code></td><td>EAGER</td><td>~ToOne: 하나뿐이라 같이 가져와도 부담 적음</td></tr>
+    <tr><td><code>@OneToMany</code>, <code>@ManyToMany</code></td><td>LAZY</td><td>~ToMany: 몇 개일지 몰라 나중에</td></tr>
+  </table></div>
+
+  <h2>같은 코드, 다른 SQL (실습 프로젝트 실제 로그)</h2>
+  <p>멤버→팀 <code>@ManyToOne</code>을 EAGER 버전, LAZY 버전으로 만들고 똑같이 <code>findById(1L)</code> 후 팀 이름을 출력했어요.</p>
+  <h3>EAGER</h3>
+  <script type="text/plain" class="src" data-lang="sql" data-file="실제 터미널 출력 · EAGER findById">select
+    em1_0.member_id,
+    em1_0.name,
+    t1_0.team_id,
+    t1_0.name
+from
+    rd_member_eager em1_0
+left join
+    rd_team t1_0
+        on t1_0.team_id=em1_0.team_id
+where
+    em1_0.member_id=?
+binding parameter (1:BIGINT) <- [1]
+팀 이름: team1</script>
+  <p>SQL 1개, 팀 컬럼(<code>t1_0.name</code>)이 이미 들어 있어요. 이후 <code>getTeam().getName()</code>은 SQL 없이 메모리에서.</p>
+
+  <h3>LAZY: 트랜잭션 밖에서</h3>
+  <script type="text/plain" class="src" data-lang="java">LazyMember l = lazyRepository.findById(1L).get();
+System.out.println("team 객체의 클래스: " + l.getTeam().getClass().getSimpleName());
+System.out.println("team id(프록시도 알고 있음): " + l.getTeam().getId());
+System.out.println(l.getTeam().getName());</script>
+  <script type="text/plain" class="src" data-lang="sql" data-file="실제 터미널 출력 · LAZY findById (트랜잭션 없음)">select
+    lm1_0.member_id,
+    lm1_0.name,
+    lm1_0.team_id
+from
+    rd_member_lazy lm1_0
+where
+    lm1_0.member_id=?
+binding parameter (1:BIGINT) <- [1]
+team 객체의 클래스: RdTeam$HibernateProxy
+team id(프록시도 알고 있음): 1
+예외: LazyInitializationException - Could not initialize proxy [demo.RdTeam#1] - no session</script>
+  <div class="explain">
+    <div><code>join 없음, team_id만</code><p>멤버 테이블의 FK 값(1)만 읽어 왔어요.</p></div>
+    <div><code>RdTeam$HibernateProxy</code><p>진짜 RdTeam이 아니라 Hibernate가 만든 가짜(프록시)예요. 안에는 id=1만 들어 있어요.</p></div>
+    <div><code>getId()</code><p>id는 프록시가 이미 알고 있어서 SQL 없이 성공.</p></div>
+    <div><code>getName()</code><p>이름은 DB에 가야 알 수 있는데, findById가 끝나면서 DB 연결(세션)이 이미 닫혔어요 → <code>no session</code>. 이게 TeamTest read2에서 봤던 그 에러예요.</p></div>
+  </div>
+
+  <h3>LAZY: 트랜잭션 안에서</h3>
+  <script type="text/plain" class="src" data-lang="sql" data-file="실제 터미널 출력 · LAZY findById (트랜잭션 있음)">select lm1_0.member_id, lm1_0.name, lm1_0.team_id from rd_member_lazy lm1_0 where lm1_0.member_id=?
+binding parameter (1:BIGINT) <- [1]
+--- getTeam().getName() 호출 직전
+select
+    rt1_0.team_id,
+    rt1_0.name
+from
+    rd_team rt1_0
+where
+    rt1_0.team_id=?
+binding parameter (1:BIGINT) <- [1]
+팀 이름: team1</script>
+  <p>"호출 직전" 출력 <strong>다음에</strong> 팀 select가 나왔어요. 실제로 쓰는 순간 가져온다는 LAZY의 정의 그대로예요. 트랜잭션이 열려 있으니 에러도 없어요.</p>
+
+  <h2>세션이 열려 있는 동안 = 트랜잭션 동안</h2>
+  <ul>
+    <li>Repository 메서드(<code>findById</code> 등)는 각자 짧은 트랜잭션을 열고, 끝나면 닫아요.</li>
+    <li>테스트 메서드나 Service 메서드에 <code>@Transactional</code>이 없으면, findById가 끝난 뒤 LAZY 객체를 건드릴 때 이미 닫혀 있어요 → LazyInitializationException.</li>
+    <li><code>@Transactional</code>을 붙이면 메서드가 끝날 때까지 열려 있어서 LAZY 조회가 가능해요.</li>
+  </ul>
+  <div class="note"><b>서버(Controller)에서는 왜 덜 터질까?</b><p>스프링 부트는 기본으로 <code>spring.jpa.open-in-view=true</code>라서 HTTP 요청이 끝날 때까지 세션을 열어 둬요 (서버 시작 로그의 open-in-view 경고가 이것). 그래서 같은 코드가 테스트에선 터지고 Swagger에선 될 수 있어요.</p></div>
+
+  <h2>N+1 문제: SQL이 줄줄이 나갈 때</h2>
+  <p>팀 3개, 멤버 3명(각자 다른 팀)일 때 <code>findAll()</code>로 멤버 목록과 팀 이름을 출력했어요.</p>
+  <script type="text/plain" class="src" data-lang="sql" data-file="실제 터미널 출력 · EAGER findAll()">select em1_0.member_id, em1_0.name, em1_0.team_id from rd_member_eager em1_0   -- 1번: 멤버 전체
+select rt1_0.team_id, rt1_0.name from rd_team rt1_0 where rt1_0.team_id=?        -- +1: 팀1
+binding parameter (1:BIGINT) <- [1]
+select rt1_0.team_id, rt1_0.name from rd_team rt1_0 where rt1_0.team_id=?        -- +1: 팀2
+binding parameter (1:BIGINT) <- [2]
+select rt1_0.team_id, rt1_0.name from rd_team rt1_0 where rt1_0.team_id=?        -- +1: 팀3
+binding parameter (1:BIGINT) <- [3]
+e-team1 / team1
+e-team2 / team2
+e-team3 / team3</script>
+  <div class="explain">
+    <div><code>1 + N</code><p>멤버 목록 1번 + 멤버마다 팀 1번씩(N=3). 멤버가 1000명이고 팀이 다 다르면 1001번이에요.</p></div>
+    <div><code>EAGER인데 join이 없다?</code><p>findById와 달리 findAll은 "멤버 전부"라는 쿼리(JPQL)를 먼저 그대로 실행하고, 그다음 EAGER 규칙을 지키려고 팀을 하나씩 추가 조회해요. <strong>EAGER가 N+1을 막아 주지 않아요.</strong></p></div>
+    <div><code>출력이 맨 마지막</code><p>EAGER라 출력하기 전에 다 가져왔어요. LAZY였다면 출력 한 줄마다 팀 select가 하나씩 끼어들어요 (아래).</p></div>
+  </div>
+  <script type="text/plain" class="src" data-lang="sql" data-file="실제 터미널 출력 · LAZY findAll() (트랜잭션 안)">select lm1_0.member_id, lm1_0.name, lm1_0.team_id from rd_member_lazy lm1_0
+select rt1_0.team_id, rt1_0.name from rd_team rt1_0 where rt1_0.team_id=?
+binding parameter (1:BIGINT) <- [1]
+l-team1 / team1
+select rt1_0.team_id, rt1_0.name from rd_team rt1_0 where rt1_0.team_id=?
+binding parameter (1:BIGINT) <- [2]
+l-team2 / team2
+select rt1_0.team_id, rt1_0.name from rd_team rt1_0 where rt1_0.team_id=?
+binding parameter (1:BIGINT) <- [3]
+l-team3 / team3</script>
+
+  <h3>해결: fetch join (곧 배울 @Query)</h3>
+  <script type="text/plain" class="src" data-lang="java" data-file="Repository">@Query("select m from LazyMember m join fetch m.team")
+List<LazyMember> findAllWithTeam();</script>
+  <script type="text/plain" class="src" data-lang="sql" data-file="실제 터미널 출력 · fetch join">select
+    lm1_0.member_id,
+    lm1_0.name,
+    t1_0.team_id,
+    t1_0.name
+from
+    rd_member_lazy lm1_0
+join
+    rd_team t1_0
+        on t1_0.team_id=lm1_0.team_id
+l-team1 / team1
+l-team2 / team2
+l-team3 / team3</script>
+  <p>SQL 1개로 끝. "이번 조회에서는 팀도 같이 가져와"라고 쿼리에 직접 적는 방식이에요. <code>join fetch</code>는 inner join이라 팀이 없는 멤버는 빠져요. 빠지면 안 될 땐 <code>left join fetch</code>.</p>
+
+  <h2>정리: 어떻게 쓰나</h2>
+  <div class="tbl"><table>
+    <tr><th>상황</th><th>권장</th></tr>
+    <tr><td>기본 설정</td><td><strong>전부 LAZY</strong>로 (<code>@ManyToOne(fetch = FetchType.LAZY)</code>). EAGER는 숨은 쿼리와 연쇄 조회를 만들어요.</td></tr>
+    <tr><td>같이 필요할 때</td><td>그 조회에서만 fetch join</td></tr>
+    <tr><td>LazyInitializationException</td><td>Service(또는 테스트) 메서드에 <code>@Transactional</code>. EAGER로 바꾸는 건 임시방편</td></tr>
+    <tr><td>mappedBy 쪽 @OneToOne</td><td>LAZY를 적어도 즉시 조회됨. 정말 필요한 경우만 양방향으로</td></tr>
+  </table></div>
+  <div class="check"><b>로그로 판단하기</b><p>① 조회 SQL에 상대 테이블 컬럼이 있다 → 같이 가져옴(EAGER 또는 fetch join). ② 없는데 나중에 <code>where 상대_id=?</code> select가 끼어든다 → LAZY. ③ 같은 모양 select가 id만 바뀌며 반복된다 → N+1. ④ <code>no session</code> → 트랜잭션 밖에서 LAZY 접근.</p></div>
+</section>
+
+<!-- ============ JPA DEEP 4: PERSISTENCE ============ -->
+<section class="page" id="persist" role="tabpanel" hidden>
+  <div class="eyebrow">19 · JPA 심화 · 10/21 수업</div>
+  <h1>영속성 컨텍스트</h1>
+  <p class="lead">JPA가 엔티티를 DB에 바로 쓰지 않고 잠시 들고 있는 메모리 공간이에요. "1차 캐시"와 "변경 감지"가 여기서 일어나요. LAZY 로딩이 가능한 것도, 위에서 SQL 없이 객체가 나온 것도 이것 때문이에요.</p>
+
+  <h2>엔티티의 4가지 상태</h2>
+  <div class="tbl"><table>
+    <tr><th>상태</th><th>뜻</th><th>어떻게 되나</th></tr>
+    <tr><td><strong>비영속</strong> (new)</td><td>그냥 new로 만든 자바 객체. JPA는 모름</td><td><code>Locker.builder()…build()</code></td></tr>
+    <tr><td><strong>영속</strong> (managed)</td><td>영속성 컨텍스트가 관리 중. 바뀌면 JPA가 알아챔</td><td><code>em.persist()</code>, <code>save()</code>, <code>findById()</code>로 가져온 객체</td></tr>
+    <tr><td><strong>준영속</strong> (detached)</td><td>관리하다가 손을 놓은 상태. 바꿔도 DB 반영 안 됨, LAZY 불가</td><td>트랜잭션이 끝난 뒤의 객체</td></tr>
+    <tr><td><strong>삭제</strong> (removed)</td><td>삭제 예정</td><td><code>em.remove()</code>, <code>delete()</code></td></tr>
+  </table></div>
+
+  <h2>PersistenceTest 해부 (10/21 수업 코드)</h2>
+  <script type="text/plain" class="src" data-lang="java" data-file="test/.../PersistenceTest.java" data-ln>@Transactional
+@SpringBootTest
+public class PersistenceTest {
+
+    @PersistenceContext
+    EntityManager em; // 영속성 관리
+
+    @Test
+    public void persistenceTest() {
+        Locker locker = Locker.builder().name("new 상태").build();
+        System.out.println("1. 비영속 상태" + locker);
+
+        em.persist(locker);
+        System.out.println("2. 영속 상태 : " + locker);
+
+        locker.changeName("변경");
+        System.out.println("3.영속 상태에서 변경 : " + locker);
+
+        em.flush();
+        System.out.println("4. flush 후 DB 반영 완료");
+    }
+}</script>
+  <script type="text/plain" class="src" data-lang="sql" data-file="실제 터미널 출력 · PersistenceTest">1. 비영속 상태Locker(id=null, name=new 상태)
+insert
+into
+    locker
+    (locker_name, locker_id)
+values
+    (?, default)
+binding parameter (1:VARCHAR) <- [new 상태]
+2. 영속 상태 : Locker(id=8, name=new 상태)
+3.영속 상태에서 변경 : Locker(id=8, name=변경)
+update
+    locker
+set
+    locker_name=?
+where
+    locker_id=?
+binding parameter (1:VARCHAR) <- [변경]
+binding parameter (2:BIGINT) <- [8]
+4. flush 후 DB 반영 완료</script>
+  <div class="explain">
+    <div><code>@PersistenceContext EntityManager em</code><p>영속성 컨텍스트를 직접 다루는 도구. Repository도 내부에서 이걸 써요 (<code>save</code> = <code>em.persist</code> 또는 <code>em.merge</code>).</p></div>
+    <div><code>1. 비영속 · id=null</code><p>그냥 자바 객체. SQL 없음.</p></div>
+    <div><code>em.persist → insert 즉시</code><p>원래 persist는 "관리 시작"만 하고 SQL은 flush 때 모아서 보내요. 그런데 <code>IDENTITY</code> 전략은 DB가 번호를 매겨야 id를 알 수 있어서, 예외적으로 insert를 바로 보내요.</p></div>
+    <div><code>2. 영속 · id=8</code><p>insert 결과로 DB가 준 번호 8이 객체에 채워졌어요.</p></div>
+    <div><code>3. changeName → SQL 없음</code><p>자바 객체만 바뀌었어요. 영속성 컨텍스트는 처음 상태(스냅샷)를 기억하고 있어요.</p></div>
+    <div><code>em.flush → update</code><p>flush = "모아 둔 변경을 DB에 SQL로 보내라". 스냅샷과 비교해서 name이 바뀐 걸 발견하고 update를 만들었어요. <strong>save를 부르지 않았는데도 update가 나간 것</strong> = 변경 감지(dirty checking).</p></div>
+    <div><code>테스트 끝 → 롤백</code><p>테스트 클래스에 <code>@Transactional</code>이 있으면 스프링은 테스트가 끝날 때 <strong>자동으로 롤백</strong>해요. 실행 후 DB를 확인해 보니 locker 8번은 없었어요 (1, 2번만 있음). id 번호만 소모돼요.</p></div>
+  </div>
+  <div class="tbl"><table>
+    <tr><th>단어</th><th>뜻</th></tr>
+    <tr><td>flush</td><td>쌓아 둔 SQL을 DB에 보내기. 아직 확정 아님 (롤백 가능)</td></tr>
+    <tr><td>commit</td><td>트랜잭션 확정. commit 직전에 자동으로 flush가 일어나요</td></tr>
+    <tr><td>rollback</td><td>트랜잭션 안에서 보낸 SQL을 전부 취소</td></tr>
+  </table></div>
+
+  <h2>1차 캐시: 같은 걸 두 번 찾으면</h2>
+  <p>연관관계 탭의 LockerTest.read2()에서 <code>sportsMemberRepository.findById(1L)</code>이 SQL 없이 끝난 이유예요.</p>
+  <ol class="steps">
+    <li><div><p>트랜잭션 안에서 엔티티를 조회하면 영속성 컨텍스트에 <code>(SportsMember, 1) → 객체</code>로 보관돼요.</p></div></li>
+    <li><div><p>같은 트랜잭션에서 같은 id를 다시 찾으면 DB에 가기 전에 여기서 먼저 찾아요. 있으면 SQL 없이 그 객체를 돌려줘요.</p></div></li>
+    <li><div><p>트랜잭션이 끝나면 비워져요. 그래서 @Transactional이 없는 read()에서는 매번 select가 나가요.</p></div></li>
+  </ol>
+
+  <h2>@Transactional과 변경 감지 다시 보기</h2>
+  <script type="text/plain" class="src" data-lang="java" data-file="memo/service/MemoService.java (현재)">public Long update(Long id, MemoRequestDto dto) {
+    Memo memo = memoRepository.findById(id).get();
+    memo.changeText(dto.getText());   // 바꾸기만 하고 save 없음
+    return memo.getId();
+}</script>
+  <p>여기엔 @Transactional이 없어서, findById가 끝나는 순간 memo는 <strong>준영속</strong>이에요. 그 뒤에 바꿔도 변경 감지가 안 일어나서 DB에 반영되지 않아요. 고치는 방법은 둘 중 하나:</p>
+  <div class="two">
+    <div class="card"><h3>@Transactional 붙이기</h3><p>메서드 동안 영속 상태 유지 → 끝날 때 commit 전 flush → 변경 감지로 update.</p></div>
+    <div class="card"><h3>save(memo) 호출</h3><p>book의 BookService.update 방식. 준영속 객체를 다시 합쳐(merge) update.</p></div>
+  </div>
+  <div class="note"><b>@Transactional은 두 종류가 있어요</b><p>PersistenceTest와 LockerTest는 <code>jakarta.transaction.Transactional</code>을 import했어요. 스프링에서도 동작하지만, 보통은 <code>org.springframework.transaction.annotation.Transactional</code>을 써요 (<code>readOnly = true</code> 같은 옵션이 있어요). 자동 import에서 고를 때 스프링 쪽을 고르세요.</p></div>
+  <div class="warn"><b>테스트 데이터가 안 남는다면</b><p>테스트 클래스나 메서드에 @Transactional이 있으면 끝나고 롤백돼요. insert 테스트에는 붙이지 말거나, 남기고 싶으면 <code>@Commit</code>(또는 <code>@Rollback(false)</code>)을 함께 붙여요.</p></div>
+</section>
+
+<!-- ============ 12 ANNOTATIONS ============ -->
+<section class="page" id="ann" role="tabpanel" hidden>
+  <div class="eyebrow">20 · 참고</div>
+  <h1>어노테이션 사전</h1>
+  <p class="lead"><code>@</code>로 시작하는 표시는 "이 클래스/필드/메서드를 이렇게 다뤄 줘"라는 메모예요. 코드를 직접 쓰는 대신 스프링이나 Lombok이 그 메모를 보고 일을 해 줘요.</p>
+  <div class="filters" id="ann-filters">
+    <button type="button" data-g="all" aria-pressed="true">전체</button>
+    <button type="button" data-g="spring" aria-pressed="false">스프링 기본</button>
+    <button type="button" data-g="web" aria-pressed="false">웹 · Controller</button>
+    <button type="button" data-g="jpa" aria-pressed="false">JPA · Entity</button>
+    <button type="button" data-g="lombok" aria-pressed="false">Lombok</button>
+    <button type="button" data-g="test" aria-pressed="false">테스트</button>
+    <button type="button" data-g="swagger" aria-pressed="false">Swagger</button>
+    <input id="ann-q" type="search" placeholder="이름이나 설명으로 찾기" aria-label="어노테이션 검색">
+  </div>
+  <div class="ann-list" id="ann-list"></div>
+  <p class="empty" id="ann-empty" hidden>찾는 어노테이션이 없어요.</p>
+</section>
+
+<!-- ============ 13 ERRORS ============ -->
+<section class="page" id="errors" role="tabpanel" hidden>
+  <div class="eyebrow">21 · 참고</div>
+  <h1>자주 만난 에러</h1>
+  <p class="lead">수업 중에 실제로 만났던 에러들이에요. 메시지의 핵심 단어로 원인을 찾을 수 있어요.</p>
+
+  <div class="tbl"><table>
+    <tr><th>메시지 / 증상</th><th>원인</th><th>해결</th></tr>
+    <tr><td><code>NoSuchElementException: No value present</code> → 500</td><td><code>findById(...).get()</code>로 없는 id를 꺼냄</td><td>DB에 있는 id인지 확인. <code>orElseThrow</code>로 의도 표시</td></tr>
+    <tr><td><code>source cannot be null</code></td><td>조회 결과 null을 <code>mapper.map</code>에 넣음 (readTitle이 findByIsbn을 부르던 실수)</td><td>올바른 Repository 메서드 호출, null 확인</td></tr>
+    <tr><td>POST/PUT 했는데 값이 전부 null</td><td><code>@RequestBody</code> 없음, 또는 Swagger 패키지의 RequestBody를 import</td><td><code>org.springframework.web.bind.annotation.RequestBody</code></td></tr>
+    <tr><td><code>The type List is not generic</code></td><td><code>java.awt.List</code>를 import</td><td><code>java.util.List</code></td></tr>
+    <tr><td>Book의 메서드를 못 찾음</td><td><code>java.awt.print.Book</code>을 import</td><td><code>com.example.book.entity.Book</code></td></tr>
+    <tr><td><code>class Team is public, should be declared in a file named Team.java</code></td><td><code>Team copy.java</code> 복사본</td><td>복사본 삭제</td></tr>
+    <tr><td><code>No default constructor for entity</code></td><td>Entity에 <code>@NoArgsConstructor</code> 없음</td><td>추가</td></tr>
+    <tr><td><code>Cycle detected</code> (Repository)</td><td>자기 자신을 extends</td><td><code>extends JpaRepository&lt;엔티티, Long&gt;</code></td></tr>
+    <tr><td><code>No qualifying bean of type ModelMapper</code></td><td>RootConfig 패키지가 스캔 범위 밖</td><td><code>package com.example.book.config;</code></td></tr>
+    <tr><td><code>Unable to find a @SpringBootConfiguration</code></td><td>테스트 파일 위치/패키지가 다름</td><td><code>src/test/java/com/example/book/</code>로 이동</td></tr>
+    <tr><td>builder에 <code>.locker()</code>가 없음</td><td>Entity에 그 필드가 없음 (복사 후 이름 안 바꿈)</td><td>필드 이름 확인 (<code>private Locker locker;</code>)</td></tr>
+    <tr><td><code>LazyInitializationException: Could not initialize proxy [...] - no session</code></td><td>트랜잭션이 끝난 뒤 LAZY 객체(프록시)의 값을 꺼냄</td><td>메서드에 <code>@Transactional</code> 또는 fetch join (LAZY와 EAGER 탭)</td></tr>
+    <tr><td>findById 한 번에 select가 여러 개 / 목록 조회에 같은 select 반복</td><td>EAGER 연쇄, N+1</td><td>LAZY + fetch join</td></tr>
+    <tr><td>모르는 테이블이 생김 (<code>TEAM_TEAM_MEMBER</code>)</td><td><code>@OneToMany</code>에 <code>mappedBy</code>를 안 썼을 때 생긴 중간 테이블</td><td>mappedBy 추가. 남은 테이블은 <code>drop table</code></td></tr>
+    <tr><td>FK 컬럼 이름이 <code>team_team_id</code></td><td><code>@JoinColumn</code> 없이 기본 이름 사용</td><td><code>@JoinColumn(name = "team_id")</code></td></tr>
+    <tr><td>save 없이 바꿨는데 DB가 그대로</td><td>트랜잭션 밖이라 변경 감지 안 됨 (memo update)</td><td><code>@Transactional</code> 또는 <code>save</code></td></tr>
+    <tr><td><code>ORA-00001</code> / <code>ORA-01400</code> / <code>ORA-02292</code></td><td>unique 중복 / NOT NULL에 null / 자식이 남은 부모 삭제</td><td>터미널 SQL 로그 탭의 Oracle 에러 표</td></tr>
+    <tr><td><code>ORA-01109: database not open</code></td><td>oracle-db 컨테이너를 막 켬</td><td>1분쯤 기다렸다가 다시 실행</td></tr>
+    <tr><td><code>StackOverflowError</code> (toString)</td><td>양방향 연관관계에서 서로를 출력</td><td><code>@ToString(exclude = "...")</code></td></tr>
+    <tr><td><code>Port 8080 was already in use</code><br>bootRun이 바로 끝나고 BUILD SUCCESSFUL</td><td>다른 서버가 이미 8080 사용 중</td><td>기존 서버 종료: <code>lsof -iTCP:8080 -sTCP:LISTEN</code> 으로 PID 확인 후 종료</td></tr>
+    <tr><td>문법 에러 (람다)</td><td><code>=></code> 사용, 세미콜론 누락</td><td>자바는 <code>-></code>, 문장 끝 <code>;</code></td></tr>
+    <tr><td>어노테이션 빨간줄 "level 25"</td><td>VS Code Java 확장과 Lombok 버전 불일치</td><td>확장 1.56 유지, Lombok 설정 확인</td></tr>
+  </table></div>
+
+  <h2>에러를 만났을 때 순서</h2>
+  <ol class="steps">
+    <li><div><p>콘솔에서 <strong>Caused by:</strong> 줄을 찾아요. 맨 아래쪽 Caused by가 진짜 원인일 때가 많아요.</p></div></li>
+    <li><div><p>메시지에 나온 클래스 이름·줄 번호(<code>BookService.java:50</code>)로 가요.</p></div></li>
+    <li><div><p>빨간줄이면 import부터, 실행 에러면 DB 데이터와 id부터 의심해요.</p></div></li>
+    <li><div><p>코드는 맞는데 VS Code만 빨가면 <code>Java: Reload Projects</code> / <code>Clean Java Language Server Workspace</code>.</p></div></li>
+  </ol>
+</section>
+
+<!-- ============ 14 ENV ============ -->
+<section class="page" id="env" role="tabpanel" hidden>
+  <div class="eyebrow">22 · 참고</div>
+  <h1>환경과 명령어</h1>
+  <div class="tbl"><table>
+    <tr><th>항목</th><th>값</th></tr>
+    <tr><td>Spring Boot</td><td>4.0.8</td></tr>
+    <tr><td>Java (JDK)</td><td>21 (temurin)</td></tr>
+    <tr><td>빌드 도구</td><td>Gradle (./gradlew)</td></tr>
+    <tr><td>DB</td><td>Oracle, OrbStack의 <code>oracle-db</code> 컨테이너</td></tr>
+    <tr><td>DB 접속</td><td><code>java_user / 12345 @ localhost:1521/FREEPDB1</code></td></tr>
+    <tr><td>서버 주소</td><td><code>http://localhost:8080</code></td></tr>
+    <tr><td>Swagger</td><td><code>http://localhost:8080/swagger-ui/index.html</code></td></tr>
+    <tr><td>VS Code Java 확장</td><td>Language Support for Java 1.56.0</td></tr>
+  </table></div>
+
+  <h2>자주 쓰는 명령</h2>
+  <script type="text/plain" class="src" data-lang="bash" data-file="터미널 (book 폴더에서)">./gradlew bootRun                  # 서버 실행 (Ctrl+C로 종료)
+./gradlew compileJava              # 컴파일만 해서 문법 에러 확인
+./gradlew test --tests TeamTest    # 테스트 클래스 하나 실행
+lsof -iTCP:8080 -sTCP:LISTEN       # 8080을 누가 쓰고 있는지
+kill <PID>                         # 그 프로세스 종료</script>
+
+  <h2>VS Code에서</h2>
+  <ul>
+    <li><strong>먼저 DB:</strong> OrbStack에서 <code>oracle-db</code> 컨테이너가 Running인지 확인. 맥을 재부팅하면 꺼져 있어요. 막 켰을 땐 <code>ORA-01109</code>가 나니 1분쯤 기다려요.</li>
+    <li>main 클래스의 <strong>Run</strong> 또는 Spring Boot Dashboard로 서버 실행</li>
+    <li>서버는 하나만. VS Code와 터미널에서 동시에 켜면 두 번째가 포트 충돌로 꺼져요.</li>
+    <li>devtools 덕분에 서버가 켜진 상태에서 코드를 저장하면 자동으로 재시작돼요.</li>
+    <li>라이브러리를 추가했으면 <code>Java: Reload Projects</code></li>
+  </ul>
+
+  <h2>프로젝트별로 배운 것</h2>
+  <div class="tbl"><table>
+    <tr><th>프로젝트</th><th>핵심</th></tr>
+    <tr><td><code>basic</code></td><td>순수 자바: 타입, 클래스, 생성자, getter/setter, toString, 객체 참조 (Board–User, Team–TeamMember)</td></tr>
+    <tr><td><code>demo</code></td><td>첫 스프링: @Controller + Thymeleaf, Student Entity, enum, Auditing, 손으로 DTO 변환, form 로그인</td></tr>
+    <tr><td><code>memo</code></td><td>@RestController CRUD, ModelMapper, 요청/응답 DTO 분리, Swagger, ResponseEntity</td></tr>
+    <tr><td><code>book</code></td><td>처음부터 직접 만든 CRUD, 쿼리 메서드, setter 없는 Entity, 연관관계 (ManyToOne, OneToMany, OneToOne 양방향), LAZY/EAGER, 영속성 컨텍스트 (EntityManager, flush)</td></tr>
+  </table></div>
+</section>
+
+</main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+(function () {
+  // code blocks: <script type="text/plain" class="src"> → pre/code (no HTML escaping needed in source)
+  document.querySelectorAll('script.src').forEach(function (s) {
+    var box = document.createElement('div'); box.className = 'code';
+    if (s.dataset.file) { var f = document.createElement('div'); f.className = 'file'; f.textContent = s.dataset.file; box.appendChild(f); }
+    var pre = document.createElement('pre'); var code = document.createElement('code');
+    var lang = s.dataset.lang || 'plaintext';
+    code.className = 'language-' + lang;
+    code.textContent = s.textContent.replace(/^\n/, '');
+    pre.appendChild(code); box.appendChild(pre);
+    s.replaceWith(box);
+    if (window.hljs && lang !== 'plaintext') { try { hljs.highlightElement(code); } catch (e) {} }
+    if (s.hasAttribute('data-ln')) {
+      code.classList.add('ln-on');
+      code.innerHTML = code.innerHTML.split('\n').map(function (l) { return '<span class="ln">' + (l || ' ') + '</span>'; }).join('');
+    }
+  });
+
+  // progress strip for CRUD tabs
+  var FILES = ['build.gradle', 'application.properties', 'Book.java', 'BookRepository.java', 'BookRepositoryTest.java', 'BookRequestDto.java', 'RootConfig.java', 'BookService.java', 'BookController.java'];
+  document.querySelectorAll('.prog').forEach(function (el) {
+    var now = el.dataset.now.split(',').map(Number), first = Math.min.apply(null, now);
+    FILES.forEach(function (f, i) {
+      var c = document.createElement('span'); c.textContent = (i < first ? '✓ ' : '') + f;
+      if (now.indexOf(i) > -1) c.className = 'now'; else if (i < first) c.className = 'done';
+      el.appendChild(c);
+    });
+  });
+
+  // annotation dictionary
+  var A = [
+    ['spring','@SpringBootApplication','시작 클래스','스프링 부트 앱의 시작점. 자동 설정을 켜고, 이 클래스의 패키지부터 아래를 컴포넌트 스캔해요.','BookApplication'],
+    ['spring','@Component','클래스','"이 클래스를 Bean으로 만들어 줘"의 기본형. @Controller, @Service, @Repository는 모두 이것의 역할별 버전이에요.',''],
+    ['spring','@Service','클래스','업무 로직 클래스를 Bean으로 등록해요.','BookService, MemoService'],
+    ['spring','@Repository','클래스','DB 접근 클래스 표시. JpaRepository를 상속한 interface는 안 붙여도 자동 등록돼요.',''],
+    ['spring','@Configuration','클래스','설정 클래스. 안의 @Bean 메서드를 실행해서 Bean을 만들어요.','RootConfig'],
+    ['spring','@Bean','메서드','이 메서드가 돌려주는 객체를 Bean으로 보관해요. 남이 만든 클래스(ModelMapper)를 등록할 때 써요.','RootConfig.getMapper()'],
+    ['spring','@Autowired','필드 · 생성자','보관된 Bean을 여기에 넣어 달라는 표시. 수업에선 테스트 클래스에서 써요.','TeamTest의 repository'],
+    ['spring','@Transactional','메서드 · 클래스','메서드 전체를 하나의 DB 작업으로 묶어요. 그동안 영속성 컨텍스트가 열려 있어서 LAZY 조회가 되고, 끝날 때 바뀐 Entity를 자동 update(변경 감지)해요. 중간에 실패하면 되돌려요. 테스트에 붙이면 끝날 때 롤백. 스프링 것(org.springframework.transaction.annotation)을 import.','memo update, LockerTest.read2, PersistenceTest'],
+    ['spring','@EnableJpaAuditing','시작 클래스','@CreatedDate, @LastModifiedDate 자동 기록을 켜요.','DemoApplication, MemoApplication'],
+    ['spring','@Override','메서드','부모의 메서드를 다시 정의한다는 표시 (자바 기본). 이름을 틀리면 컴파일러가 알려 줘요.','Board.toString()'],
+    ['web','@Controller','클래스','요청을 받아 HTML 템플릿 이름을 돌려주는 Controller.','HomeController, StudentController'],
+    ['web','@RestController','클래스','@Controller + @ResponseBody. 돌려주는 객체를 JSON으로 바로 응답해요.','BookController, MemoController'],
+    ['web','@RequestMapping','클래스','이 Controller의 공통 앞주소.','@RequestMapping("/books")'],
+    ['web','@GetMapping','메서드','GET 요청(조회)을 받아요.','@GetMapping("/{id}")'],
+    ['web','@PostMapping','메서드','POST 요청(추가)을 받아요.','postBook'],
+    ['web','@PutMapping','메서드','PUT 요청(수정)을 받아요.','putBook'],
+    ['web','@DeleteMapping','메서드','DELETE 요청(삭제)을 받아요.','deleteMemo'],
+    ['web','@PathVariable','파라미터','주소 안의 {id} 자리 값을 꺼내요.','/books/14 → id=14'],
+    ['web','@RequestParam','파라미터','?title=... 같은 쿼리 값을 꺼내요. 이름이 같으면 생략 가능.','/books/title?title=...'],
+    ['web','@RequestBody','파라미터','요청 본문 JSON을 DTO로 바꿔 받아요. 꼭 스프링 패키지 것을 import.','@RequestBody BookRequestDto dto'],
+    ['web','@ResponseBody','메서드 · 클래스','리턴값을 HTML 이름이 아니라 데이터로 응답. @RestController에 이미 들어 있어요.',''],
+    ['jpa','@Entity','클래스','이 클래스는 DB 테이블과 연결된다는 표시.','Book, Memo, Team'],
+    ['jpa','@Table','클래스','테이블 이름을 직접 정해요. 없으면 클래스 이름 사용.','@Table(name = "memotbl")'],
+    ['jpa','@Id','필드','기본키(PK).','private Long id'],
+    ['jpa','@GeneratedValue','필드','PK 번호를 DB가 자동으로 매겨요. IDENTITY = 자동 증가.','strategy = GenerationType.IDENTITY'],
+    ['jpa','@Column','필드','컬럼 이름, NOT NULL, 길이, unique 등 설정.','@Column(nullable = false, unique = true)'],
+    ['jpa','@Enumerated','필드','enum 저장 방식. STRING으로 해야 글자로 저장돼요.','Student.grade'],
+    ['jpa','@EntityListeners','클래스','Entity에 이벤트 감시자를 붙여요. Auditing에 필요.','AuditingEntityListener.class'],
+    ['jpa','@CreatedDate','필드','처음 저장될 때 시각을 자동 기록.','createdDate'],
+    ['jpa','@LastModifiedDate','필드','수정될 때마다 시각을 자동 기록.','updatedDate'],
+    ['jpa','@ManyToOne','필드','N:1 연결. 여러 멤버가 한 팀에. 이쪽 테이블에 FK가 생기는 연관관계의 주인. 기본 EAGER(조회 시 left join). fetch = FetchType.LAZY 권장.','TeamMember.team'],
+    ['jpa','@OneToMany','필드','1:N 연결. 한 팀이 여러 멤버를. mappedBy = "상대 필드명"으로 주인을 지정. 기본 LAZY. mappedBy를 빼면 중간 테이블이 생겨요.','Team.teamMember'],
+    ['jpa','@OneToOne','필드','1:1 연결. FK를 가진 쪽에 @JoinColumn, 반대쪽은 mappedBy. 기본 EAGER. mappedBy 쪽은 LAZY를 적어도 즉시 조회돼요.','SportsMember.locker, Locker.sportsMember'],
+    ['jpa','@ManyToMany','필드','N:M 연결. 중간 테이블이 자동으로 생겨요. 기본 LAZY. 중간 테이블에 컬럼을 못 넣어서 실무에선 중간 엔티티 + @ManyToOne 두 개로 풀어요.','Student.courses'],
+    ['jpa','@JoinTable','필드','@ManyToMany의 중간 테이블 이름과 양쪽 FK 컬럼 이름을 정해요.','@JoinTable(name = "student_course")'],
+    ['jpa','@PersistenceContext','필드','영속성 컨텍스트를 다루는 EntityManager를 주입받아요. persist, flush, find, remove를 직접 호출할 때.','PersistenceTest.em'],
+    ['jpa','@Query','Repository 메서드','메서드 이름 대신 JPQL을 직접 적어요. join fetch로 N+1을 해결할 때 써요.','@Query("select m from Member m join fetch m.team")'],
+    ['jpa','@JoinColumn','필드','FK 컬럼 이름을 정해요. 없으면 "필드명_상대PK명".','@JoinColumn(name = "team_id")'],
+    ['lombok','@Getter','클래스 · 필드','모든 필드의 getXxx() 메서드를 만들어 줘요.',''],
+    ['lombok','@Setter','클래스 · 필드','모든 필드의 setXxx() 메서드를 만들어 줘요. Entity에선 빼고 change 메서드를 쓰는 연습을 했어요.',''],
+    ['lombok','@ToString','클래스','toString()을 만들어 줘요. exclude로 순환 출력을 막아요.','@ToString(exclude = "team")'],
+    ['lombok','@NoArgsConstructor','클래스','파라미터 없는 생성자. JPA Entity엔 필수.',''],
+    ['lombok','@AllArgsConstructor','클래스','모든 필드를 받는 생성자. @Builder가 사용해요.',''],
+    ['lombok','@RequiredArgsConstructor','클래스','final 필드만 받는 생성자. 스프링 생성자 주입에 써요.','BookService, BookController'],
+    ['lombok','@Builder','클래스','Book.builder().title("..").price(36000).build() 식으로 원하는 필드만 골라 객체를 만들어요.','BookRepositoryTest.insert'],
+    ['lombok','@Builder.Default','필드','@Builder로 만들 때도 필드 초기값(new ArrayList<>())을 유지해요.','Team.teamMember'],
+    ['lombok','@Data','클래스','@Getter + @Setter + @ToString + @EqualsAndHashCode + @RequiredArgsConstructor 묶음. DTO에 편해요. Entity엔 쓰지 않아요.','MemoRequestDto'],
+    ['lombok','@Log4j2','클래스','log 변수를 만들어 줘요. log.info("값 {}", dto)로 콘솔에 기록.','HomeController, StudentService'],
+    ['test','@SpringBootTest','테스트 클래스','스프링 전체를 띄워서 테스트. Bean을 @Autowired로 받을 수 있어요.','BookRepositoryTest'],
+    ['test','@Test','메서드','JUnit 테스트 메서드. VS Code에 ▶ 버튼이 생겨요.','insert(), read()'],
+    ['test','@Commit','테스트 클래스 · 메서드','@Transactional 테스트를 롤백하지 않고 커밋해서 데이터를 남겨요. @Rollback(false)와 같아요.',''],
+    ['swagger','@Tag','Controller 클래스','Swagger 화면에서 API 묶음 이름과 설명.','@Tag(name = "Response Memo")'],
+    ['swagger','@Operation','메서드','Swagger 화면에서 API 하나의 요약과 설명.','@Operation(summary = "도서 목록 조회")']
+  ];
+  var GL = { spring: '스프링 기본', web: '웹', jpa: 'JPA', lombok: 'Lombok', test: '테스트', swagger: 'Swagger' };
+  var list = document.getElementById('ann-list'), empty = document.getElementById('ann-empty'), q = document.getElementById('ann-q');
+  var group = 'all';
+  A.forEach(function (a) {
+    var el = document.createElement('div'); el.className = 'ann'; el.dataset.g = a[0];
+    el.dataset.s = (a[1] + ' ' + a[3] + ' ' + a[4]).toLowerCase();
+    var nm = document.createElement('div'); nm.className = 'nm';
+    nm.appendChild(document.createTextNode(a[1]));
+    var sm = document.createElement('small'); sm.textContent = GL[a[0]] + ' · ' + a[2]; nm.appendChild(sm);
+    var d = document.createElement('div'); d.className = 'd';
+    var p = document.createElement('span'); p.textContent = a[3]; d.appendChild(p);
+    if (a[4]) { var ex = document.createElement('span'); ex.className = 'ex'; ex.textContent = '예: ' + a[4]; d.appendChild(ex); }
+    el.appendChild(nm); el.appendChild(d); list.appendChild(el);
+  });
+  function filter() {
+    var t = q.value.trim().toLowerCase(), n = 0;
+    list.querySelectorAll('.ann').forEach(function (el) {
+      var ok = (group === 'all' || el.dataset.g === group) && (!t || el.dataset.s.indexOf(t) > -1);
+      el.hidden = !ok; if (ok) n++;
+    });
+    empty.hidden = n > 0;
+  }
+  document.querySelectorAll('#ann-filters button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      group = b.dataset.g;
+      document.querySelectorAll('#ann-filters button').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+      filter();
+    });
+  });
+  q.addEventListener('input', filter);
+
+  // tabs
+  var btns = Array.prototype.slice.call(document.querySelectorAll('.tabbtn'));
+  var ids = btns.map(function (b) { return b.dataset.tab; });
+  var names = {}; btns.forEach(function (b) { names[b.dataset.tab] = b.textContent.replace(/^\d+/, '').trim(); });
+
+  document.querySelectorAll('section.page').forEach(function (sec, i) {
+    var pg = document.createElement('div'); pg.className = 'pager';
+    if (i > 0) { var pv = document.createElement('button'); pv.type = 'button'; pv.innerHTML = '<small>이전</small><b></b>'; pv.querySelector('b').textContent = names[ids[i - 1]]; pv.onclick = function () { show(ids[i - 1], true); }; pg.appendChild(pv); }
+    if (i < ids.length - 1) { var nx = document.createElement('button'); nx.type = 'button'; nx.className = 'next'; nx.innerHTML = '<small>다음</small><b></b>'; nx.querySelector('b').textContent = names[ids[i + 1]]; nx.onclick = function () { show(ids[i + 1], true); }; pg.appendChild(nx); }
+    sec.appendChild(pg);
+  });
+
+  function show(id, scroll) {
+    if (ids.indexOf(id) < 0) id = ids[0];
+    ids.forEach(function (x) { document.getElementById(x).hidden = x !== id; });
+    btns.forEach(function (b) { var on = b.dataset.tab === id; b.setAttribute('aria-selected', on ? 'true' : 'false'); if (on && window.innerWidth <= 880) { var side = document.querySelector('.side'); side.scrollLeft = b.offsetLeft - side.clientWidth / 2 + b.offsetWidth / 2; } });
+    try { localStorage.setItem('spring-notes-tab', id); } catch (e) {}
+    try { history.replaceState(null, '', '#' + id); } catch (e) {}
+    window.scrollTo(0, 0);
+  }
+  btns.forEach(function (b) { b.addEventListener('click', function () { show(b.dataset.tab, true); }); });
+
+  var start = (location.hash || '').slice(1);
+  if (ids.indexOf(start) < 0) { try { start = localStorage.getItem('spring-notes-tab') || ''; } catch (e) { start = ''; } }
+  show(start || ids[0], false);
+})();
+</script>

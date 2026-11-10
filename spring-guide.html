@@ -1,0 +1,521 @@
+<title>Spring 수업 지도</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: 한 줄 읽기 폭의 노트, 층(layer)마다 고정 색을 주고 그 색을 흐름도·폴더 지도·해부 섹션에서 똑같이 씀 */
+:root{
+  --bg:#f6f8f7; --surface:#ffffff; --fg:#17201c; --muted:#5b6862; --line:#dbe3df;
+  --accent:#1f7a4d; --accent-soft:#e3f2ea; --warn:#9a5b00; --warn-soft:#fdf1dc;
+  --code-bg:#eef2f0; --code-fg:#1d2a24; --code-cm:#6f7f77;
+  --l-view:#2f6fb0; --l-ctrl:#7a4cc2; --l-svc:#1f7a4d; --l-repo:#b25d12; --l-db:#5d6b73; --l-dto:#c0398a;
+  --font-body:"IBM Plex Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --s1:.8125rem; --s2:.9375rem; --s3:1.0625rem; --s4:1.375rem; --s5:1.875rem;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111614; --surface:#18201c; --fg:#e4ece8; --muted:#9aa9a2; --line:#2b3632;
+  --accent:#5cc28e; --accent-soft:#1c3328; --warn:#f0b45a; --warn-soft:#33281a;
+  --code-bg:#0c110f; --code-fg:#dbe6e0; --code-cm:#7d8f86;
+  --l-view:#6aa8e8; --l-ctrl:#b293ea; --l-svc:#5cc28e; --l-repo:#e8964f; --l-db:#9fb0b8; --l-dto:#ec7fbe;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111614; --surface:#18201c; --fg:#e4ece8; --muted:#9aa9a2; --line:#2b3632;
+  --accent:#5cc28e; --accent-soft:#1c3328; --warn:#f0b45a; --warn-soft:#33281a;
+  --code-bg:#0c110f; --code-fg:#dbe6e0; --code-cm:#7d8f86;
+  --l-view:#6aa8e8; --l-ctrl:#b293ea; --l-svc:#5cc28e; --l-repo:#e8964f; --l-db:#9fb0b8; --l-dto:#ec7fbe;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:var(--s2);line-height:1.75;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+main{max-width:46rem;margin:0 auto}
+header{padding-block:48px 24px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:var(--s1);letter-spacing:.08em;color:var(--accent);font-weight:600}
+h1{font-size:var(--s5);line-height:1.3;margin:.25em 0 .4em;text-wrap:balance}
+h2{font-size:var(--s4);line-height:1.4;margin:0 0 .6em;text-wrap:balance}
+h3{font-size:var(--s3);margin:1.6em 0 .4em}
+p{margin:.6em 0}
+.lead{color:var(--muted);font-size:var(--s3)}
+section{padding-block:40px 8px;border-bottom:1px solid var(--line)}
+section:last-of-type{border-bottom:0}
+nav.toc{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:20px}
+nav.toc a{font-size:var(--s1);color:var(--fg);text-decoration:none;border:1px solid var(--line);background:var(--surface);padding:3px 10px;border-radius:999px}
+nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--accent);color:var(--accent);outline:none}
+code{font-family:var(--font-mono);font-size:.88em;background:var(--code-bg);padding:.1em .35em;border-radius:4px;overflow-wrap:anywhere}
+pre{background:var(--code-bg);color:var(--code-fg);font-family:var(--font-mono);font-size:var(--s1);line-height:1.65;padding:14px 16px;border-radius:8px;overflow-x:auto;margin:.8em 0}
+pre code{background:none;padding:0;font-size:inherit;overflow-wrap:normal}
+.cm{color:var(--code-cm)}
+.hl{color:var(--accent);font-weight:600}
+.src{font-size:var(--s1);color:var(--muted);margin:-.4em 0 1em;font-family:var(--font-mono)}
+.tbl{overflow-x:auto;margin:.8em 0}
+table{border-collapse:collapse;width:100%;font-size:var(--s1);min-width:30rem}
+th,td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600;white-space:nowrap}
+td code{white-space:nowrap}
+.note{background:var(--accent-soft);border-radius:8px;padding:12px 16px;margin:1em 0}
+.warn{background:var(--warn-soft);border-radius:8px;padding:12px 16px;margin:1em 0}
+.warn b{color:var(--warn)}
+.chip{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.03em;color:#fff;padding:1px 8px;border-radius:4px;white-space:nowrap;vertical-align:1px}
+.c-view{background:var(--l-view)}.c-ctrl{background:var(--l-ctrl)}.c-svc{background:var(--l-svc)}.c-repo{background:var(--l-repo)}.c-db{background:var(--l-db)}.c-dto{background:var(--l-dto)}
+:root:not([data-theme="light"]) .chip{color:var(--bg)}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .chip{color:#fff}}
+:root[data-theme="light"] .chip{color:#fff}
+/* 흐름도 */
+ol.flow{list-style:none;margin:1.2em 0;padding:0;display:grid;gap:0}
+ol.flow li{display:grid;grid-template-columns:2rem 1fr;gap:12px;position:relative;padding-bottom:14px}
+ol.flow li::before{content:"";position:absolute;left:calc(1rem - 1px);top:2rem;bottom:0;width:2px;background:var(--line)}
+ol.flow li:last-child::before{display:none}
+.num{width:2rem;height:2rem;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:var(--s1);color:#fff;font-variant-numeric:tabular-nums;position:relative;z-index:1}
+.flow .body{min-width:0;padding-top:3px}
+.flow .what{font-weight:600}
+.flow .detail{color:var(--muted);font-size:var(--s1);line-height:1.6}
+/* 폴더 지도 */
+.tree{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto;font-size:var(--s1)}
+.tree .row{display:grid;grid-template-columns:minmax(14rem,auto) 1fr;gap:4px 16px;padding:3px 0;align-items:baseline}
+.tree .path{font-family:var(--font-mono);white-space:pre}
+.tree .desc{color:var(--muted);min-width:12rem}
+.tree .row.dim .path{color:var(--muted)}
+/* 비교 카드 */
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:12px;margin:1em 0}
+.pair > div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;min-width:0}
+.pair h4{margin:0 0 .4em;font-size:var(--s2)}
+.pair pre{margin:.5em 0 0}
+.layer-title{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.layer-title h3{margin:0}
+.layer{margin-top:28px}
+a{color:var(--accent)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<main>
+<header>
+  <div class="eyebrow">SPRING SOURCE · 10/13 – 10/16 수업 정리</div>
+  <h1>요청 하나가 화면이 되기까지</h1>
+  <p class="lead">자바를 처음 하는 사람 기준으로, 지금까지 수업에서 만든 <code>basic</code>, <code>demo</code>, <code>memo</code> 세 폴더를 순서대로 풀어 쓴 노트예요. React와 FastAPI는 이미 해 봤으니 그쪽과 비교하면서 설명해요.</p>
+  <nav class="toc" aria-label="목차">
+    <a href="#flow">한 장 요약</a><a href="#fastapi">FastAPI와 비교</a><a href="#folders">폴더 지도</a><a href="#java">자바 기초</a><a href="#layers">층별 해부</a><a href="#front">프론트와 소통</a><a href="#memo">금요일: memo</a><a href="#boot">서버가 켜질 때</a><a href="#found">코드에서 보인 것</a>
+  </nav>
+</header>
+
+<section id="flow">
+  <h2>한 장 요약: <code>/student/list</code>에 접속하면 생기는 일</h2>
+  <p>지금까지 배운 건 결국 이 흐름 하나예요. 각 단계의 색은 아래 모든 섹션에서 같은 층을 뜻해요.</p>
+  <ol class="flow">
+    <li><span class="num c-view">1</span><div class="body"><div class="what"><span class="chip c-view">브라우저</span> 주소창에 <code>localhost:8080/student/list</code> 입력</div><div class="detail">브라우저가 서버에 "GET /student/list 주세요"라는 요청을 보내요.</div></div></li>
+    <li><span class="num c-ctrl">2</span><div class="body"><div class="what"><span class="chip c-ctrl">Controller</span> 주소에 맞는 메서드를 찾아 실행</div><div class="detail">스프링 안에 들어 있는 서버(Tomcat)가 8080 포트에서 요청을 받아요. <code>@RequestMapping("/student")</code> + <code>@GetMapping("/list")</code>가 붙은 <code>StudentController.getStudents()</code>가 실행돼요.</div></div></li>
+    <li><span class="num c-svc">3</span><div class="body"><div class="what"><span class="chip c-svc">Service</span> 컨트롤러가 일을 맡김</div><div class="detail">컨트롤러는 직접 일하지 않고 <code>studentService.getList()</code>를 불러요.</div></div></li>
+    <li><span class="num c-repo">4</span><div class="body"><div class="what"><span class="chip c-repo">Repository</span> DB에 SQL을 보냄</div><div class="detail">서비스가 <code>studentRepository.findAll()</code>을 부르면, JPA가 <code>select … from studenttbl</code> SQL을 대신 만들어 Oracle에 보내요.</div></div></li>
+    <li><span class="num c-db">5</span><div class="body"><div class="what"><span class="chip c-db">DB → Entity</span> 결과 행이 자바 객체로 바뀜</div><div class="detail">테이블의 한 줄(row)이 <code>Student</code> 객체 하나가 돼요. 여러 줄이니 <code>List&lt;Student&gt;</code>로 돌아와요.</div></div></li>
+    <li><span class="num c-dto">6</span><div class="body"><div class="what"><span class="chip c-dto">DTO</span> 서비스가 Entity를 DTO로 옮겨 담음</div><div class="detail"><code>Student</code>의 값을 하나씩 꺼내 <code>StudentDto</code>에 넣어요. 화면에 나갈 상자는 DB용 객체와 따로 두는 거예요.</div></div></li>
+    <li><span class="num c-ctrl">7</span><div class="body"><div class="what"><span class="chip c-ctrl">Controller</span> 데이터를 Model에 담아 화면 파일로 넘김</div><div class="detail"><code>model.addAttribute("list", list)</code>. 메서드가 <code>void</code>라서 주소와 같은 경로의 <code>templates/student/list.html</code>을 화면으로 써요.</div></div></li>
+    <li><span class="num c-view">8</span><div class="body"><div class="what"><span class="chip c-view">Thymeleaf → 브라우저</span> HTML 완성 후 응답</div><div class="detail"><code>th:each</code>가 학생 수만큼 <code>&lt;tr&gt;</code>을 만들어 완성된 HTML을 브라우저로 보내요. 브라우저는 그걸 그대로 보여 줘요.</div></div></li>
+  </ol>
+  <div class="note">한 문장으로: <b>Controller는 받고, Service는 일하고, Repository는 DB와 말하고, Entity는 테이블 모양이고, DTO는 밖으로 나가는 상자</b>예요.</div>
+</section>
+
+<section id="fastapi">
+  <h2>FastAPI로 치면 뭐예요?</h2>
+  <p>이미 만들어 본 FastAPI 프로젝트와 거의 1:1로 대응돼요. 이름만 다르고 하는 일은 같아요.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>하는 일</th><th>FastAPI</th><th>Spring Boot</th></tr></thead>
+    <tbody>
+      <tr><td>서버 시작</td><td><code>uvicorn main:app</code></td><td><code>./gradlew bootRun</code> → <code>DemoApplication.main()</code></td></tr>
+      <tr><td>실제로 요청을 받는 서버</td><td>uvicorn</td><td>Tomcat (스프링 안에 내장)</td></tr>
+      <tr><td><span class="chip c-ctrl">Controller</span> 주소 연결</td><td><code>@router.get("/list")</code></td><td><code>@GetMapping("/list")</code></td></tr>
+      <tr><td><span class="chip c-svc">Service</span> 일 처리</td><td><code>service.py</code> 함수</td><td><code>@Service</code> 클래스</td></tr>
+      <tr><td><span class="chip c-repo">Repository</span> DB 조회·저장</td><td><code>db.query(...)</code>, <code>db.add()</code></td><td><code>JpaRepository</code>의 <code>findAll()</code>, <code>save()</code></td></tr>
+      <tr><td><span class="chip c-db">Entity</span> 테이블 모양</td><td>SQLAlchemy <code>models.py</code></td><td><code>@Entity</code> 클래스</td></tr>
+      <tr><td><span class="chip c-dto">DTO</span> 주고받는 데이터 모양</td><td>Pydantic <code>schemas.py</code></td><td><code>dto</code> 패키지 클래스</td></tr>
+      <tr><td>의존성 주입</td><td><code>Depends(get_db)</code></td><td><code>private final</code> + <code>@RequiredArgsConstructor</code></td></tr>
+      <tr><td>라이브러리 목록</td><td><code>requirements.txt</code> / pip</td><td><code>build.gradle</code> / Gradle</td></tr>
+      <tr><td>설정값</td><td><code>.env</code></td><td><code>application.properties</code></td></tr>
+      <tr><td>테이블 자동 생성</td><td>Alembic, <code>create_all()</code></td><td><code>ddl-auto=update</code></td></tr>
+      <tr><td>서버가 그리는 HTML</td><td>Jinja2 템플릿</td><td>Thymeleaf 템플릿</td></tr>
+    </tbody>
+  </table></div>
+  <p>가장 큰 차이는 두 가지예요. 자바는 <b>모든 코드가 클래스 안에</b> 있어야 하고, <b>변수마다 타입을 먼저 적어야</b> 해요. 그래서 같은 일을 해도 파일과 줄 수가 더 많아 보여요.</p>
+</section>
+
+<section id="folders">
+  <h2>폴더 지도: 각 폴더가 하는 일</h2>
+  <p><code>demo</code> 프로젝트 기준이에요. <code>memo</code>도 구조는 같고, <code>config</code> 폴더만 하나 더 있어요.</p>
+  <div class="tree" role="list">
+    <div class="row" role="listitem"><span class="path">demo/</span><span class="desc">프로젝트 하나 = 서버 하나</span></div>
+    <div class="row" role="listitem"><span class="path">├─ build.gradle</span><span class="desc">필요한 라이브러리 목록. React의 <code>package.json</code> 역할</span></div>
+    <div class="row" role="listitem"><span class="path">├─ settings.gradle</span><span class="desc">프로젝트 이름</span></div>
+    <div class="row" role="listitem"><span class="path">├─ gradlew</span><span class="desc">Gradle 실행기. 설치 없이 <code>./gradlew bootRun</code>으로 실행</span></div>
+    <div class="row" role="listitem"><span class="path">├─ gradle/wrapper/</span><span class="desc">gradlew가 쓰는 파일. 건드릴 일 없음</span></div>
+    <div class="row" role="listitem"><span class="path">├─ src/main/java/com/example/demo/</span><span class="desc">자바 코드 전부. 폴더 경로가 곧 패키지 이름 <code>com.example.demo</code></span></div>
+    <div class="row" role="listitem"><span class="path">│  ├─ DemoApplication.java</span><span class="desc">시작 버튼. <code>main()</code>이 여기 있음</span></div>
+    <div class="row" role="listitem"><span class="path">│  ├─ controller/</span><span class="desc"><span class="chip c-ctrl">Controller</span> 요청을 받는 곳</span></div>
+    <div class="row" role="listitem"><span class="path">│  ├─ service/</span><span class="desc"><span class="chip c-svc">Service</span> 실제 일 처리</span></div>
+    <div class="row" role="listitem"><span class="path">│  ├─ repository/</span><span class="desc"><span class="chip c-repo">Repository</span> DB 창구</span></div>
+    <div class="row" role="listitem"><span class="path">│  ├─ entity/</span><span class="desc"><span class="chip c-db">Entity</span> 테이블 모양</span></div>
+    <div class="row" role="listitem"><span class="path">│  │  └─ constants/Grade.java</span><span class="desc">학년처럼 정해진 값 목록 (enum)</span></div>
+    <div class="row" role="listitem"><span class="path">│  └─ dto/</span><span class="desc"><span class="chip c-dto">DTO</span> 주고받는 상자</span></div>
+    <div class="row" role="listitem"><span class="path">├─ src/main/resources/</span><span class="desc">자바가 아닌 파일</span></div>
+    <div class="row" role="listitem"><span class="path">│  ├─ application.properties</span><span class="desc">DB 주소·계정, 테이블 생성 방식, 로그 설정</span></div>
+    <div class="row" role="listitem"><span class="path">│  ├─ templates/</span><span class="desc"><span class="chip c-view">화면</span> Thymeleaf HTML. 서버가 데이터를 채워서 보냄</span></div>
+    <div class="row" role="listitem"><span class="path">│  └─ static/</span><span class="desc">css, js, 이미지처럼 그대로 보내는 파일</span></div>
+    <div class="row" role="listitem"><span class="path">├─ src/test/java/…</span><span class="desc">테스트 코드 (JUnit). 서버 없이 DB 작업만 확인</span></div>
+    <div class="row dim" role="listitem"><span class="path">└─ build/</span><span class="desc">컴파일 결과물. 실행하면 자동으로 생기니 건드리지 않음</span></div>
+  </div>
+  <div class="note"><b>폴더를 이렇게 나누는 이유:</b> 스프링은 <code>DemoApplication.java</code>가 있는 패키지(<code>com.example.demo</code>)와 <b>그 아래 폴더만</b> 훑어서 <code>@Controller</code>, <code>@Service</code> 같은 표시가 붙은 클래스를 찾아요. 그래서 컨트롤러를 <code>com.example.demo</code> 밖에 두면 스프링이 못 찾고 404가 나요.</div>
+  <p><code>basic</code> 폴더는 스프링이 아닌 순수 자바 연습용이에요. <code>src/</code>에 코드, <code>lib/</code>에 직접 넣은 <code>lombok.jar</code>, <code>bin/</code>에 컴파일된 <code>.class</code> 파일이 있어요.</p>
+</section>
+
+<section id="java">
+  <h2>자바 기초 (<code>basic</code> 폴더)</h2>
+
+  <h3>클래스와 객체</h3>
+  <p>클래스는 <b>붕어빵 틀</b>, 객체는 틀로 찍어 낸 <b>붕어빵</b>이에요. 틀만 있으면 아무것도 못 하고, <code>new</code>로 찍어 내야 쓸 수 있어요.</p>
+<pre><code><span class="cm">// basic/src/ch1/BoardMain.java</span>
+User user = <span class="hl">new</span> User(1L, "홍길동", "hong123@gmail.com");
+Board board = <span class="hl">new</span> Board(1L, "게시글", "게시글", user);</code></pre>
+  <p>파이썬이라면 <code>user = User(1, "홍길동", ...)</code>라고 쓸 거예요. 자바는 앞에 <b>타입(<code>User</code>)</b>을 적고, 앞에 <b><code>new</code></b>를 붙여요.</p>
+
+  <h3>타입을 먼저 적는다</h3>
+<pre><code>String name = "홍길동";       <span class="cm">// 문자열</span>
+Long id = 1L;                 <span class="cm">// 큰 정수. 숫자 뒤 L = Long이라는 표시</span>
+List&lt;StudentDto&gt; list;        <span class="cm">// StudentDto만 담을 수 있는 리스트</span></code></pre>
+  <p>파이썬 리스트는 아무 타입이나 섞어 담을 수 있지만, 자바는 <code>&lt;&gt;</code> 안에 무엇을 담을지 정해요.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>종류</th><th>기본 타입 (소문자)</th><th>객체 타입 (대문자)</th></tr></thead>
+    <tbody>
+      <tr><td>정수</td><td><code>int</code>, <code>long</code></td><td><code>Integer</code>, <code>Long</code></td></tr>
+      <tr><td>실수</td><td><code>float</code>, <code>double</code></td><td><code>Float</code>, <code>Double</code></td></tr>
+      <tr><td>문자 / 문자열</td><td><code>char</code> (<code>'a'</code>)</td><td><code>Character</code>, <code>String</code> (<code>"a"</code>)</td></tr>
+    </tbody>
+  </table></div>
+  <p>Entity의 id가 <code>long</code>이 아니라 <code>Long</code>인 이유: 객체 타입은 <code>null</code>(값 없음)을 가질 수 있어요. 아직 DB에 저장하기 전에는 id가 없으니 <code>null</code>이어야 해요.</p>
+
+  <h3>필드, 생성자, 오버로딩</h3>
+<pre><code><span class="cm">// basic/src/ch1/Board.java</span>
+public class Board {
+    private Long id;          <span class="cm">// 필드: 객체가 가진 값</span>
+    private String title;
+    private User user;        <span class="cm">// 다른 객체도 필드가 될 수 있음</span>
+
+    <span class="cm">// 생성자: new 할 때 실행, 필드 초기화 담당</span>
+    public Board(Long id, String title, String contents) { … }
+
+    <span class="cm">// 같은 이름 생성자를 파라미터 개수만 다르게 하나 더 → 오버로딩</span>
+    public Board(Long id, String title, String contents, User user) { … }
+}</code></pre>
+  <ul>
+    <li><b><code>private</code></b>: 이 클래스 안에서만 접근 가능. 밖에서는 <code>board.title</code>로 직접 못 건드려요.</li>
+    <li><b>getter / setter</b>: 그래서 <code>getTitle()</code>, <code>setTitle()</code> 메서드로 꺼내고 바꿔요.</li>
+    <li><b><code>toString()</code></b>: 객체를 출력할 때 쓰는 글자. 직접 만들지 않으면 <code>ch1.Board@6d06d69c</code>처럼 알아보기 힘든 값이 나와요.</li>
+  </ul>
+
+  <h3>Lombok: 반복 코드를 대신 써 주는 도구</h3>
+  <p><code>Board.java</code>는 getter, setter, toString을 직접 써서 56줄이에요. <code>User.java</code>는 Lombok 어노테이션으로 같은 일을 해서 18줄이에요.</p>
+<pre><code><span class="cm">// basic/src/ch1/User.java</span>
+@ToString @Setter @Getter @AllArgsConstructor @NoArgsConstructor
+public class User {
+    private Long id;
+    private String name;
+    private String email;
+}</code></pre>
+  <div class="tbl"><table>
+    <thead><tr><th>어노테이션</th><th>대신 만들어 주는 것</th></tr></thead>
+    <tbody>
+      <tr><td><code>@Getter</code> / <code>@Setter</code></td><td>모든 필드의 <code>getXxx()</code> / <code>setXxx()</code></td></tr>
+      <tr><td><code>@NoArgsConstructor</code></td><td>파라미터 없는 생성자 <code>new User()</code></td></tr>
+      <tr><td><code>@AllArgsConstructor</code></td><td>모든 필드를 받는 생성자 <code>new User(1L, "홍길동", "…")</code></td></tr>
+      <tr><td><code>@RequiredArgsConstructor</code></td><td><code>final</code> 필드만 받는 생성자 (스프링 의존성 주입에 씀)</td></tr>
+      <tr><td><code>@ToString</code></td><td>필드 값이 보이는 <code>toString()</code></td></tr>
+      <tr><td><code>@Builder</code></td><td><code>User.builder().name("홍길동").build()</code> 식으로 만들기</td></tr>
+      <tr><td><code>@Log4j2</code></td><td><code>log.info(...)</code>로 로그 찍기</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>어노테이션(<code>@</code>)이란?</b> 파이썬 데코레이터처럼 생겼지만, 스스로 무언가를 실행하지는 않아요. 클래스에 붙이는 <b>표시표</b>예요. Lombok이나 스프링이 그 표시를 보고 대신 코드를 만들거나 객체를 관리해 줘요.</div>
+</section>
+
+<section id="layers">
+  <h2>층별 해부 (<code>demo</code> 폴더)</h2>
+  <p>DB에서 가까운 층부터 올라가요. 만드는 순서도 보통 이 순서예요.</p>
+
+  <div class="layer">
+    <div class="layer-title"><span class="chip c-db">Entity</span><h3>테이블 모양을 자바 클래스로</h3></div>
+<pre><code><span class="cm">// demo/.../entity/Student.java (요약)</span>
+@EntityListeners(value = AuditingEntityListener.class)
+@Table(name = "studenttbl")   <span class="cm">// 테이블 이름</span>
+@Entity                        <span class="cm">// 이 클래스 = DB 테이블</span>
+public class Student {
+    @Id                                                 <span class="cm">// PK</span>
+    @GeneratedValue(strategy = GenerationType.IDENTITY) <span class="cm">// 번호 자동 증가</span>
+    private Long id;
+
+    @Column(name = "sname", length = 50, nullable = false)
+    private String name;
+
+    @Enumerated(EnumType.STRING)   <span class="cm">// enum을 글자로 저장 ("FRESHMAN")</span>
+    private Grade grade;
+
+    @CreatedDate      private LocalDateTime createdDate;  <span class="cm">// 저장 시각 자동 입력</span>
+    @LastModifiedDate private LocalDateTime updatedDate;  <span class="cm">// 수정 시각 자동 입력</span>
+}</code></pre>
+    <p>이 클래스를 만들고 서버를 켜면, <code>application.properties</code>의 <code>ddl-auto=update</code> 설정 때문에 <code>studenttbl</code> 테이블이 자동으로 생겨요. SQL로 <code>CREATE TABLE</code>을 직접 쓰지 않아도 돼요. 이렇게 객체와 테이블을 이어 주는 방식을 <b>ORM</b>이라고 하고, 자바의 ORM 표준이 <b>JPA</b>예요.</p>
+    <p><code>@CreatedDate</code>가 동작하려면 <code>DemoApplication.java</code>에 <code>@EnableJpaAuditing</code>이 붙어 있어야 해요.</p>
+  </div>
+
+  <div class="layer">
+    <div class="layer-title"><span class="chip c-repo">Repository</span><h3>내용이 비어 있는데 동작하는 DB 창구</h3></div>
+<pre><code><span class="cm">// demo/.../repository/StudentRepository.java</span>
+public interface StudentRepository extends JpaRepository&lt;Student, Long&gt; {
+}</code></pre>
+    <p>안이 비어 있는데도 동작해요. <code>JpaRepository&lt;Entity 이름, id 타입&gt;</code>을 이어받기만 하면, 스프링이 실행할 때 아래 메서드들을 자동으로 만들어 줘요.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>메서드</th><th>하는 일</th><th>실행되는 SQL</th></tr></thead>
+      <tbody>
+        <tr><td><code>save(student)</code></td><td>저장 (id 없으면 새로, 있으면 수정)</td><td><code>insert</code> / <code>update</code></td></tr>
+        <tr><td><code>findAll()</code></td><td>전체 조회</td><td><code>select * from …</code></td></tr>
+        <tr><td><code>findById(1L)</code></td><td>하나 조회 (결과는 <code>Optional</code>)</td><td><code>select … where id = 1</code></td></tr>
+        <tr><td><code>deleteById(1L)</code></td><td>삭제</td><td><code>delete … where id = 1</code></td></tr>
+      </tbody>
+    </table></div>
+    <div class="warn"><b>오늘 본 에러와 연결:</b> <code>findById()</code>는 결과가 없을 수도 있어서 값을 <code>Optional</code>이라는 상자에 담아 줘요. 빈 상자에 <code>.get()</code>을 부르면 <code>NoSuchElementException</code>이 나요. 빈 테이블에서 <code>readTest</code>가 실패한 이유가 이거예요.</div>
+  </div>
+
+  <div class="layer">
+    <div class="layer-title"><span class="chip c-svc">Service</span><h3>실제 일 처리 + 의존성 주입</h3></div>
+<pre><code><span class="cm">// demo/.../service/StudentService.java (요약)</span>
+@RequiredArgsConstructor
+@Service
+public class StudentService {
+    private final StudentRepository studentRepository;  <span class="cm">// new 하지 않았는데 쓸 수 있음</span>
+
+    public List&lt;StudentDto&gt; getList() {
+        List&lt;Student&gt; list = studentRepository.findAll();
+        List&lt;StudentDto&gt; students = new ArrayList&lt;&gt;();
+        for (Student s : list) {               <span class="cm">// Entity → DTO 옮겨 담기</span>
+            StudentDto dto = new StudentDto();
+            dto.setId(s.getId());
+            dto.setName(s.getName());
+            …
+            students.add(dto);
+        }
+        return students;
+    }
+}</code></pre>
+    <h3>왜 <code>new</code> 없이 쓸 수 있나요? (의존성 주입)</h3>
+    <p>자바는 객체를 만들어야 그 기능을 쓸 수 있다고 했어요. 원래라면 서비스가 레포지토리를 직접 만들어야 해요.</p>
+    <div class="pair">
+      <div><h4>스프링 없이</h4>
+<pre><code>public class StudentService {
+  StudentRepository repo;
+  public StudentService() {
+    repo = new StudentRepository();
+  }
+}</code></pre></div>
+      <div><h4>스프링에서</h4>
+<pre><code>@RequiredArgsConstructor
+@Service
+public class StudentService {
+  private final StudentRepository repo;
+}</code></pre></div>
+    </div>
+    <ol>
+      <li>서버가 켜질 때 스프링이 <code>@Service</code>, <code>@Controller</code>, Repository 같은 표시가 붙은 클래스를 찾아서 <b>미리 하나씩 만들어 보관</b>해요. 이렇게 보관된 객체를 <b>빈(Bean)</b>이라고 하고, 보관하는 곳을 <b>스프링 컨테이너</b>라고 해요.</li>
+      <li><code>@RequiredArgsConstructor</code>가 <code>final</code> 필드를 받는 생성자를 만들어요.</li>
+      <li>스프링이 그 생성자에 보관해 둔 Repository를 <b>넣어 줘요(주입)</b>.</li>
+    </ol>
+    <p>FastAPI에서 <code>db: Session = Depends(get_db)</code>라고 쓰면 세션이 알아서 들어오던 것과 같은 원리예요.</p>
+  </div>
+
+  <div class="layer">
+    <div class="layer-title"><span class="chip c-ctrl">Controller</span><h3>주소와 메서드를 연결</h3></div>
+<pre><code><span class="cm">// demo/.../controller/StudentController.java</span>
+@RequiredArgsConstructor
+@RequestMapping("/student")   <span class="cm">// 이 클래스의 공통 앞주소</span>
+@Controller
+public class StudentController {
+    private final StudentService studentService;
+
+    @GetMapping("/list")      <span class="cm">// GET /student/list</span>
+    public void getStudents(Model model) {
+        List&lt;StudentDto&gt; list = studentService.getList();
+        model.addAttribute("list", list);   <span class="cm">// 화면에 "list"라는 이름으로 전달</span>
+    }
+}</code></pre>
+    <div class="tbl"><table>
+      <thead><tr><th>반환 타입</th><th>어떤 화면 파일을 쓰나</th><th>예</th></tr></thead>
+      <tbody>
+        <tr><td><code>void</code></td><td>요청 주소와 같은 경로</td><td><code>/student/list</code> → <code>templates/student/list.html</code></td></tr>
+        <tr><td><code>String</code></td><td>돌려준 글자와 같은 이름</td><td><code>return "home";</code> → <code>templates/home.html</code></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="layer">
+    <div class="layer-title"><span class="chip c-dto">DTO</span><h3>왜 Entity를 그대로 보내지 않나요?</h3></div>
+    <p><code>StudentDto</code>는 <code>Student</code>와 필드가 거의 같은데 굳이 따로 만들어요. 이유는 세 가지예요.</p>
+    <ul>
+      <li><b>보안:</b> 회원 Entity에는 비밀번호도 있어요. Entity를 그대로 내보내면 비밀번호까지 화면으로 나가요. DTO에는 보낼 것만 넣어요.</li>
+      <li><b>DB 보호:</b> Entity는 DB와 연결된 객체라서, 값을 바꾸면 DB까지 바뀔 수 있어요. 화면 쪽에서 다루는 건 연결이 없는 DTO가 안전해요.</li>
+      <li><b>모양이 달라도 됨:</b> 로그인 화면은 아이디·비밀번호만 보내요. 그래서 <code>LoginDto</code>는 필드가 2개뿐이고, 대응하는 Entity도 없어요.</li>
+    </ul>
+    <p>FastAPI에서 SQLAlchemy 모델과 Pydantic 스키마를 따로 만들던 것과 같은 이유예요.</p>
+  </div>
+</section>
+
+<section id="front">
+  <h2>프론트와 자바가 소통하는 원리</h2>
+  <h3>기본: 요청과 응답</h3>
+  <p>프론트(브라우저, React)와 서버는 <b>HTTP</b>라는 약속으로 대화해요. 프론트가 요청을 보내면 서버가 응답 하나를 돌려줘요.</p>
+  <div class="tbl"><table>
+    <thead><tr><th></th><th>담기는 것</th><th>예</th></tr></thead>
+    <tbody>
+      <tr><td>요청</td><td>메서드 + 주소 (+ 보낼 데이터)</td><td><code>GET /student/list</code>, <code>POST /login</code> + 아이디·비밀번호</td></tr>
+      <tr><td>응답</td><td>상태 코드 + 내용</td><td><code>200</code> + HTML, <code>200</code> + JSON</td></tr>
+    </tbody>
+  </table></div>
+  <p>상태 코드: <code>200</code> 성공, <code>404</code> 그 주소에 연결된 기능 없음, <code>500</code> 서버 코드에서 에러. 오늘 <code>memo</code> 서버에서 본 404는 <code>MemoController</code>가 비어 있어서 연결된 주소가 하나도 없었기 때문이에요.</p>
+  <p>응답의 <b>내용</b>을 무엇으로 보내느냐에 따라 방식이 둘로 나뉘어요.</p>
+
+  <h3>방식 A. 서버가 HTML을 완성해서 보냄 (<code>demo</code>, <code>@Controller</code>)</h3>
+<pre><code>&lt;!-- demo/.../templates/student/list.html --&gt;
+&lt;tr <span class="hl">th:each="dto : ${list}"</span>&gt;       &lt;!-- list 안의 dto마다 한 줄씩 --&gt;
+  &lt;td <span class="hl">th:text="${dto.name}"</span>&gt;&lt;/td&gt;   &lt;!-- dto.getName() 값으로 채움 --&gt;
+&lt;/tr&gt;</code></pre>
+  <p><code>${list}</code>는 컨트롤러가 <code>model.addAttribute("list", …)</code>로 넣은 그 이름이에요. Thymeleaf가 서버에서 이 자리를 실제 값으로 바꾼 뒤, <b>완성된 HTML</b>을 브라우저로 보내요. 브라우저는 받은 걸 보여 주기만 해요.</p>
+  <h3>A-2. 화면 → 서버로 데이터 보내기: 로그인 폼</h3>
+<pre><code>&lt;!-- demo/.../templates/home.html --&gt;
+&lt;form action="/login" method="post"&gt;
+  &lt;input type="text" <span class="hl">name="id"</span> /&gt;
+  &lt;input type="text" <span class="hl">name="password"</span> /&gt;
+&lt;/form&gt;
+
+<span class="cm">// demo/.../controller/HomeController.java</span>
+@PostMapping("/login")
+public void postLogin(LoginDto dto) { log.info("로그인요청 {}", dto); }
+
+<span class="cm">// demo/.../dto/LoginDto.java</span>
+public class LoginDto { private String <span class="hl">id</span>; private String <span class="hl">password</span>; }</code></pre>
+  <p>로그인 버튼을 누르면 브라우저가 <code>id=hong&amp;password=1234</code> 같은 데이터를 <code>POST /login</code>으로 보내요. 스프링은 <b><code>input</code>의 <code>name</code>과 DTO의 필드 이름이 같은 것끼리</b> 짝지어서 <code>LoginDto</code>를 자동으로 채워요. 이름이 하나라도 다르면 그 값은 <code>null</code>이 돼요.</p>
+
+  <h3>방식 B. 데이터만 JSON으로 보내고, 화면은 React가 그림 (<code>memo</code>가 갈 방향)</h3>
+  <p><code>memo</code>의 컨트롤러에는 <code>@RestController</code>가 붙어 있어요. 주석에도 "데이터만 전송할거야"라고 적혀 있죠. 이 방식에서는 컨트롤러가 화면 파일 이름 대신 <b>데이터 자체</b>를 돌려주고, 스프링이 그걸 JSON으로 바꿔서 보내요. FastAPI에서 리스트를 return하면 JSON이 나가던 것과 같아요.</p>
+  <div class="warn"><b>아래 코드는 예시예요.</b> 금요일 수업에서는 <code>MemoController</code>가 아직 비어 있어요. 다음 수업 코드는 이것과 다를 수 있어요.</div>
+  <div class="pair">
+    <div><h4>Spring (서버)</h4>
+<pre><code>@RestController
+@RequiredArgsConstructor
+public class MemoController {
+  private final MemoService memoService;
+
+  @GetMapping("/memo")
+  public List&lt;MemoDto&gt; list() {
+    return memoService.readAll();
+  }
+}</code></pre></div>
+    <div><h4>React (프론트)</h4>
+<pre><code>const res = await fetch(
+  "http://localhost:8080/memo");
+const memos = await res.json();
+// [{ id: 1, text: "memo text1",
+//    createdDate: "...", ... }]
+setMemos(memos);</code></pre></div>
+  </div>
+  <p>React 개발 서버(<code>localhost:5173</code>)와 스프링(<code>localhost:8080</code>)은 포트가 달라서 서로 다른 주소로 취급돼요. FastAPI 때 <code>CORSMiddleware</code>를 넣었던 것처럼, 스프링에도 CORS 허용 설정이 필요해요.</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th></th><th>A. <code>@Controller</code> + Thymeleaf</th><th>B. <code>@RestController</code> + React</th></tr></thead>
+    <tbody>
+      <tr><td>서버가 보내는 것</td><td>완성된 HTML</td><td>JSON 데이터</td></tr>
+      <tr><td>화면을 그리는 곳</td><td>서버 (<code>templates/</code>)</td><td>브라우저 (React 컴포넌트)</td></tr>
+      <tr><td>컨트롤러가 돌려주는 것</td><td>화면 파일 이름 (<code>"home"</code>, <code>void</code>)</td><td>데이터 (<code>List&lt;MemoDto&gt;</code>)</td></tr>
+      <tr><td>데이터 전달 통로</td><td><code>Model</code></td><td>return 값</td></tr>
+      <tr><td>지금까지 만든 것</td><td><code>demo</code></td><td><code>memo</code> (진행 중), FastAPI 게시판</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="memo">
+  <h2>금요일에 새로 나온 것: <code>memo</code></h2>
+  <p>구조는 <code>demo</code>와 같고, 반복 코드를 줄이는 도구와 테스트가 새로 나왔어요.</p>
+
+  <h3>ModelMapper: Entity ↔ DTO 자동 변환</h3>
+  <div class="pair">
+    <div><h4>demo: 한 필드씩 직접</h4>
+<pre><code>StudentDto dto = new StudentDto();
+dto.setId(s.getId());
+dto.setName(s.getName());
+dto.setGrade(s.getGrade());
+dto.setCreatedDate(…);
+dto.setUpdatedDate(…);</code></pre></div>
+    <div><h4>memo: 한 줄</h4>
+<pre><code>MemoDto dto =
+  modelMapper.map(memo, MemoDto.class);</code></pre></div>
+  </div>
+  <p>필드 이름이 같은 것끼리 알아서 옮겨 줘요. <code>build.gradle</code>에 <code>org.modelmapper:modelmapper</code>를 추가하고, <code>config/RootConfig.java</code>에서 <code>@Configuration</code> + <code>@Bean</code>으로 스프링에 등록했어요. 등록해 두면 Service에서 <code>private final ModelMapper modelMapper;</code>로 주입받아 쓸 수 있어요.</p>
+  <p><code>@Bean</code>은 <code>@Service</code>처럼 클래스에 붙이는 게 아니라, <b>직접 만든 객체를 빈으로 등록</b>할 때 메서드에 붙여요. ModelMapper는 남이 만든 라이브러리라 클래스에 <code>@Service</code>를 붙일 수 없어서 이렇게 해요.</p>
+
+  <h3>Setter 없는 Entity</h3>
+<pre><code><span class="cm">// memo/.../entity/Memo.java: @Setter가 없음</span>
+public void changeText(String text) {
+    this.text = text;
+}</code></pre>
+  <p><code>Student</code>에는 <code>@Setter</code>가 있어서 아무 값이나 바꿀 수 있었어요. <code>Memo</code>는 <code>@Setter</code>를 빼고 <b>바꿔도 되는 것만 메서드로 열어 뒀어요</b>. 메모는 내용만 수정할 수 있고, id나 작성 시각은 못 바꾸게 막은 거예요.</p>
+
+  <h3>Service의 CRUD 5개</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>메서드</th><th>하는 일</th><th>Repository 호출</th></tr></thead>
+    <tbody>
+      <tr><td><code>create(dto)</code></td><td>DTO → Entity로 바꿔 저장, 새 id 반환</td><td><code>save()</code></td></tr>
+      <tr><td><code>read(id)</code></td><td>하나 조회 후 DTO로</td><td><code>findById()</code></td></tr>
+      <tr><td><code>readAll()</code></td><td>전체 조회 후 DTO 리스트로</td><td><code>findAll()</code></td></tr>
+      <tr><td><code>update(dto)</code></td><td>찾아서 <code>changeText()</code></td><td><code>findById()</code></td></tr>
+      <tr><td><code>delete(id)</code></td><td>삭제</td><td><code>deleteById()</code></td></tr>
+    </tbody>
+  </table></div>
+  <p><code>update()</code>는 <code>save()</code>를 부르지 않아요. JPA는 조회해 온 Entity의 값이 바뀌면 그걸 기억해 뒀다가 자동으로 <code>update</code> SQL을 보내요. 이 기능을 <b>변경 감지(dirty checking)</b>라고 해요. 다만 이 자동 반영은 트랜잭션 안에서만 일어나고, 지금 <code>MemoService</code>에는 <code>@Transactional</code>이 없어요. 컨트롤러를 붙여서 실제로 수정해 볼 때 반영되는지 확인이 필요해요.</p>
+
+  <h3>테스트 코드 (JUnit)</h3>
+<pre><code><span class="cm">// memo/src/test/.../MemoRepositoryTest.java</span>
+@SpringBootTest                   <span class="cm">// 스프링을 띄운 상태로 테스트</span>
+public class MemoRepositoryTest {
+    @Autowired private MemoRepository memoRepository;
+
+    @Test
+    public void insertTest() {
+        LongStream.range(1, 11).forEach(i -&gt; {           <span class="cm">// 1~10 반복</span>
+            Memo memo = Memo.builder().text("memo text" + i).build();
+            memoRepository.save(memo);
+        });
+    }
+}</code></pre>
+  <p>컨트롤러나 화면 없이 <b>DB 작업만</b> 따로 확인하는 코드예요. <code>@Test</code>가 붙은 메서드 하나하나를 따로 실행할 수 있어요.</p>
+  <div class="warn"><b>주의:</b> 클래스 전체를 한 번에 실행하면 메서드 순서가 보장되지 않아요. 빈 테이블에서 <code>readTest</code>가 <code>insertTest</code>보다 먼저 돌면 실패해요. 오늘 본 에러가 이거예요. 실습할 때는 insert → read → update → delete 순서로 하나씩 실행하세요.</div>
+</section>
+
+<section id="boot">
+  <h2>서버가 켜질 때 일어나는 일</h2>
+  <p>터미널에서 <code>./gradlew bootRun</code>을 치면 아래 순서로 진행돼요.</p>
+  <ol class="flow">
+    <li><span class="num c-db">1</span><div class="body"><div class="what">Gradle이 라이브러리 준비</div><div class="detail"><code>build.gradle</code>에 적힌 라이브러리를 받아요 (처음 한 번만 오래 걸림). <code>npm install</code>과 비슷해요.</div></div></li>
+    <li><span class="num c-db">2</span><div class="body"><div class="what">컴파일</div><div class="detail"><code>.java</code> 파일을 컴퓨터가 실행할 수 있는 <code>.class</code> 파일로 바꿔 <code>build/</code>에 넣어요. 이때 Lombok이 getter·생성자 같은 코드를 채워 넣어요. 문법 오류가 있으면 여기서 멈춰요.</div></div></li>
+    <li><span class="num c-svc">3</span><div class="body"><div class="what"><code>main()</code> 실행 → 스프링 시작</div><div class="detail"><code>SpringApplication.run(DemoApplication.class, args)</code>가 스프링을 깨워요.</div></div></li>
+    <li><span class="num c-svc">4</span><div class="body"><div class="what">빈 등록 (컴포넌트 스캔)</div><div class="detail"><code>com.example.demo</code> 아래를 훑어서 Controller, Service, Repository를 만들어 보관하고, 서로 필요한 것끼리 주입해요.</div></div></li>
+    <li><span class="num c-repo">5</span><div class="body"><div class="what">DB 연결 + 테이블 확인</div><div class="detail"><code>application.properties</code>의 주소·계정으로 Oracle에 접속해요. <code>ddl-auto=update</code>라서 Entity와 테이블을 비교하고, 없거나 달라진 부분을 만들어요. Oracle이 꺼져 있으면 여기서 실패해요.</div></div></li>
+    <li><span class="num c-view">6</span><div class="body"><div class="what">Tomcat이 8080 포트를 열고 대기</div><div class="detail">로그에 <code>Tomcat started on port 8080</code>, <code>Started DemoApplication</code>이 보이면 준비 완료예요. 이미 다른 서버가 8080을 쓰고 있으면 <code>Port 8080 was already in use</code> 에러가 나요.</div></div></li>
+  </ol>
+  <div class="note"><b>서버가 안 켜질 때 확인 순서:</b> Oracle 컨테이너가 켜져 있나 (OrbStack → <code>oracle-db</code>) → 8080을 다른 서버가 쓰고 있지 않나 → 로그의 첫 번째 <code>Caused by</code> 줄.</div>
+</section>
+
+<section id="found">
+  <h2>코드에서 보인 것</h2>
+  <p>지금은 실행에 문제가 없지만, 알아 두면 좋은 부분이에요.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>위치</th><th>원문</th><th>설명</th></tr></thead>
+    <tbody>
+      <tr><td><code>demo/…/HomeController.java:27</code></td><td><code>public void postLogin(LoginDto dto)</code></td><td><code>void</code>라서 <code>templates/login.html</code>을 찾는데 그 파일이 없어요. 29번 줄 주석처럼 로그인 버튼을 누르면 <code>TemplateInputException</code>이 나요. <b>아직 구현 전 단계</b>예요.</td></tr>
+      <tr><td><code>demo/…/templates/student/list.html:17</code></td><td><code>&lt;tbody&gt;</code></td><td><code>&lt;thead&gt;</code>(11~24줄) 안에 <code>&lt;tbody&gt;</code>가 들어가 있어요. 브라우저가 알아서 고쳐 보여 주지만, 원래는 <code>&lt;/thead&gt;</code>를 먼저 닫아야 해요.</td></tr>
+      <tr><td><code>demo/…/constants/Grade.java:5</code></td><td><code>JUNITOR</code></td><td><code>JUNIOR</code>의 오타예요. DB에 이 글자 그대로 저장돼요.</td></tr>
+      <tr><td><code>memo/…/entity/Memo.java:9</code></td><td><code>import aQute.bnd.annotation.headers.BundleLicense;</code></td><td>쓰지 않는 import예요. 자동완성으로 잘못 들어간 것 같아요.</td></tr>
+      <tr><td><code>memo/…/service/MemoService.java</code></td><td><code>findById(id).get()</code></td><td>없는 id를 조회하면 <code>NoSuchElementException</code>이 나요. 테스트에서 본 에러와 같은 원인이에요.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+</main>
